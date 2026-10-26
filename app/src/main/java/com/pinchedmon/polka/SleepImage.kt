@@ -8,7 +8,6 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.ImageDecoder
 import android.graphics.Paint
-import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import java.nio.ByteBuffer
@@ -33,23 +32,32 @@ object SleepImage {
         }
     }
 
-    /** [crop] fills the screen and cuts the edges; otherwise the whole picture fits with white margins. */
-    fun render(src: Bitmap, crop: Boolean): Bitmap {
+    /**
+     * Where the picture sits on the 480×800 screen: [scale] output px per source px, image centre at
+     * ([cx], [cy]) in output px, rotated by [rot] degrees (multiple of 90), margins painted [black] or white.
+     */
+    data class Framing(val scale: Float, val cx: Float, val cy: Float, val rot: Int = 0, val black: Boolean = false) {
+        companion object {
+            fun preset(sw: Int, sh: Int, rot: Int, fill: Boolean, black: Boolean = false): Framing {
+                val (w, h) = if (rot % 180 == 0) sw to sh else sh to sw
+                val s = if (fill) maxOf(W / w.toFloat(), H / h.toFloat()) else minOf(W / w.toFloat(), H / h.toFloat())
+                return Framing(s, W / 2f, H / 2f, rot, black)
+            }
+        }
+    }
+
+    fun render(src: Bitmap, f: Framing): Bitmap {
         val out = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
         val c = Canvas(out)
-        c.drawColor(android.graphics.Color.WHITE)
-        val sw = src.width.toFloat()
-        val sh = src.height.toFloat()
-        val scale = if (crop) maxOf(W / sw, H / sh) else minOf(W / sw, H / sh)
-        val dw = (sw * scale).toInt()
-        val dh = (sh * scale).toInt()
-        val left = (W - dw) / 2
-        val top = (H - dh) / 2
+        c.drawColor(if (f.black) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
         // E-ink is grayscale anyway — convert here so the preview shows what the reader will show.
         val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG).apply {
             colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
         }
-        c.drawBitmap(src, null, Rect(left, top, left + dw, top + dh), paint)
+        c.translate(f.cx, f.cy)
+        c.rotate(f.rot.toFloat())
+        c.scale(f.scale, f.scale)
+        c.drawBitmap(src, -src.width / 2f, -src.height / 2f, paint)
         return out
     }
 

@@ -50,6 +50,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -148,7 +159,6 @@ fun MiniReader(image: ImageBitmap?, pinned: Boolean, onClick: (() -> Unit)? = nu
     Box(
         modifier
             .fillMaxWidth()
-            .aspectRatio(0.66f)
             .clip(RoundedCornerShape(12.dp))
             .background(p.ink)
             .then(if (pinned) Modifier.border(2.dp, p.ember, RoundedCornerShape(12.dp)) else Modifier)
@@ -156,7 +166,7 @@ fun MiniReader(image: ImageBitmap?, pinned: Boolean, onClick: (() -> Unit)? = nu
             .padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 14.dp)
     ) {
         Box(
-            Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp)).background(p.screen),
+            Modifier.fillMaxWidth().aspectRatio(0.6f).clip(RoundedCornerShape(4.dp)).background(p.screen),
             contentAlignment = Alignment.Center,
         ) {
             if (image != null) {
@@ -175,44 +185,113 @@ fun MiniReader(image: ImageBitmap?, pinned: Boolean, onClick: (() -> Unit)? = nu
     }
 }
 
-/** Preview + fit/crop before sending. Shows exactly the grayscale 480×800 the reader will get. */
+/**
+ * Framing editor before sending: pinch to zoom, drag to move, presets, 90° turns, white/black margins.
+ * The preview is the real 480×800 grayscale screen, so what you see is what the reader gets.
+ */
 @Composable
-fun WallpaperEditor(uris: List<Uri>, onDismiss: () -> Unit, onSend: (crop: Boolean, pin: Boolean) -> Unit) {
+fun WallpaperEditor(
+    uris: List<Uri>,
+    onDismiss: () -> Unit,
+    onSend: (items: List<Pair<Uri, SleepImage.Framing?>>, pin: Boolean) -> Unit,
+) {
     val p = LocalPalette.current
     val ctx = LocalContext.current
-    var crop by remember { mutableStateOf(true) }
-    var preview by remember { mutableStateOf<ImageBitmap?>(null) }
-    var failed by remember { mutableStateOf(false) }
-    LaunchedEffect(crop) {
-        runCatching {
-            withContext(Dispatchers.Default) {
-                SleepImage.render(SleepImage.load(ctx, uris.first()), crop).asImageBitmap()
+    val sources = remember { mutableStateMapOf<Int, ImageBitmap>() }
+    val framings = remember { mutableStateMapOf<Int, SleepImage.Framing>() }
+    val failed = remember { mutableStateMapOf<Int, Boolean>() }
+    var index by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(index) {
+        if (index in sources || failed[index] == true) return@LaunchedEffect
+        runCatching { withContext(Dispatchers.Default) { SleepImage.load(ctx, uris[index]) } }
+            .onSuccess { bmp ->
+                sources[index] = bmp.asImageBitmap()
+                framings[index] = SleepImage.Framing.preset(bmp.width, bmp.height, 0, fill = true)
             }
-        }.onSuccess { preview = it }.onFailure { failed = true }
+            .onFailure { failed[index] = true }
     }
-    Dialog(onDismissRequest = onDismiss) {
+
+    val src = sources[index]
+    val f = framings[index]
+    fun update(block: (SleepImage.Framing) -> SleepImage.Framing) {
+        framings[index]?.let { framings[index] = block(it) }
+    }
+
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(
-            Modifier.clip(RoundedCornerShape(28.dp)).background(p.card).padding(20.dp),
+            Modifier.padding(16.dp).fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(p.card).padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                if (uris.size == 1) "Новая заставка" else "Заставки · ${uris.size}",
+                if (uris.size == 1) "Новая заставка" else "Заставка ${index + 1} из ${uris.size}",
                 style = MaterialTheme.typography.titleLarge, color = p.ink,
             )
             Spacer(Modifier.height(14.dp))
-            Box(Modifier.width(170.dp)) {
-                MiniReader(preview, pinned = false)
-                if (failed) Text("не открылась", color = p.ember, modifier = Modifier.align(Alignment.Center))
+
+            Box(
+                Modifier.width(220.dp).clip(RoundedCornerShape(16.dp)).background(p.ink)
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 20.dp),
+            ) {
+                if (src != null && f != null) {
+                    FrameCanvas(src, f, onChange = { nf -> framings[index] = nf })
+                } else {
+                    Box(
+                        Modifier.fillMaxWidth().aspectRatio(0.6f).clip(RoundedCornerShape(4.dp)).background(p.screen),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (failed[index] == true) Text("не открылась", color = p.ember, fontSize = 13.sp)
+                        else CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = p.muted)
+                    }
+                }
             }
+            Text(
+                "щипок — масштаб · палец — двигать",
+                color = p.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Tool("Заполнить") {
+                    src?.let { s -> update { SleepImage.Framing.preset(s.width, s.height, it.rot, fill = true, black = it.black) } }
+                }
+                Tool("Вписать") {
+                    src?.let { s -> update { SleepImage.Framing.preset(s.width, s.height, it.rot, fill = false, black = it.black) } }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Tool("↻ 90°") {
+                    src?.let { s ->
+                        update {
+                            val rot = (it.rot + 90) % 360
+                            // Keep "fill" feel after turning: re-fit to the new orientation.
+                            SleepImage.Framing.preset(s.width, s.height, rot, fill = true, black = it.black)
+                        }
+                    }
+                }
+                Tool(if (f?.black == true) "Поля: чёрные" else "Поля: белые") { update { it.copy(black = !it.black) } }
+            }
+
             if (uris.size > 1) {
-                Text("и ещё ${uris.size - 1}", color = p.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
+                Row(Modifier.fillMaxWidth().padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "‹ назад", color = if (index > 0) p.ink else p.line, fontSize = 14.sp,
+                        modifier = Modifier.clickable(enabled = index > 0) { index-- }.padding(8.dp),
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "дальше ›", color = if (index < uris.size - 1) p.ink else p.line, fontSize = 14.sp,
+                        modifier = Modifier.clickable(enabled = index < uris.size - 1) { index++ }.padding(8.dp),
+                    )
+                }
             }
+
             Spacer(Modifier.height(14.dp))
-            Segmented(listOf("Заполнить", "Вписать"), if (crop) 0 else 1, { crop = it == 0 })
-            Spacer(Modifier.height(16.dp))
+            fun items() = uris.mapIndexedNotNull { i, u -> if (failed[i] == true) null else u to framings[i] }
             Box(
                 Modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(26.dp)).background(p.ember)
-                    .clickable { onSend(crop, true) },
+                    .clickable { onSend(items(), true) },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -223,8 +302,64 @@ fun WallpaperEditor(uris: List<Uri>, onDismiss: () -> Unit, onSend: (crop: Boole
             Text(
                 "просто в коллекцию (случайная при каждом сне)",
                 color = p.muted, fontSize = 13.sp, textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 12.dp).clickable { onSend(crop, false) }.padding(6.dp),
+                modifier = Modifier.padding(top = 12.dp).clickable { onSend(items(), false) }.padding(6.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun Tool(label: String, onClick: () -> Unit) {
+    val p = LocalPalette.current
+    Box(
+        Modifier.clip(RoundedCornerShape(50)).border(1.dp, p.line, RoundedCornerShape(50))
+            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 8.dp),
+    ) { Text(label, color = p.ink, fontSize = 13.sp) }
+}
+
+private val grayscale = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+
+/** Live 480×800 screen. Gestures are converted from preview px into output px. */
+@Composable
+private fun FrameCanvas(src: ImageBitmap, f: SleepImage.Framing, onChange: (SleepImage.Framing) -> Unit) {
+    val p = LocalPalette.current
+    val current by rememberUpdatedState(f)
+    val change by rememberUpdatedState(onChange)
+    Canvas(
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.6f)
+            .clip(RoundedCornerShape(4.dp))
+            .pointerInput(src) {
+                detectTransformGestures { centroid, pan, zoom, _ ->
+                    val k = SleepImage.W / size.width.toFloat()
+                    val fr = current
+                    val fit = minOf(
+                        SleepImage.W / src.width.toFloat(), SleepImage.H / src.height.toFloat(),
+                        SleepImage.W / src.height.toFloat(), SleepImage.H / src.width.toFloat(),
+                    )
+                    val ns = (fr.scale * zoom).coerceIn(fit * 0.3f, fit * 12f)
+                    val z = ns / fr.scale
+                    val ox = centroid.x * k
+                    val oy = centroid.y * k
+                    change(
+                        fr.copy(
+                            scale = ns,
+                            cx = ox + (fr.cx - ox) * z + pan.x * k,
+                            cy = oy + (fr.cy - oy) * z + pan.y * k,
+                        )
+                    )
+                }
+            }
+    ) {
+        val q = size.width / SleepImage.W
+        drawRect(if (f.black) Color.Black else Color.White)
+        withTransform({
+            translate(f.cx * q, f.cy * q)
+            rotate(f.rot.toFloat(), pivot = Offset.Zero)
+            scale(f.scale * q, f.scale * q, pivot = Offset.Zero)
+        }) {
+            drawImage(src, topLeft = Offset(-src.width / 2f, -src.height / 2f), colorFilter = grayscale)
         }
     }
 }

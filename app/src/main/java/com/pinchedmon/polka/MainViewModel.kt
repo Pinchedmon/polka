@@ -231,15 +231,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Converts pictures to 480×800 BMP and sends them to /sleep. With [pin], the first one also becomes /sleep.bmp. */
-    fun addWallpapers(uris: List<Uri>, crop: Boolean, pin: Boolean) {
-        if (uris.isEmpty()) return
+    fun addWallpapers(items: List<Pair<Uri, SleepImage.Framing?>>, pin: Boolean) {
+        if (items.isEmpty()) return
         val app = getApplication<Application>()
         viewModelScope.launch {
             val taken = sleepFiles.map { it.name.lowercase() }.toMutableSet()
-            uris.forEachIndexed { i, uri ->
+            items.forEachIndexed { i, (uri, framing) ->
                 val file = runCatching {
                     withContext(Dispatchers.Default) {
-                        val bmp = SleepImage.toBmp(SleepImage.render(SleepImage.load(app, uri), crop))
+                        val bmp = SleepImage.toBmp(SleepImage.load(app, uri).let { src ->
+                            SleepImage.render(src, framing ?: SleepImage.Framing.preset(src.width, src.height, 0, fill = true))
+                        })
                         File.createTempFile("sleep", ".bmp", app.cacheDir).apply { writeBytes(bmp) }
                     }
                 }.getOrElse {

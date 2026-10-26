@@ -247,7 +247,7 @@ fun PolkaScreen(vm: MainViewModel) {
     if (editing.isNotEmpty()) WallpaperEditor(
         uris = editing,
         onDismiss = { editing = emptyList() },
-        onSend = { crop, pin -> vm.addWallpapers(editing, crop, pin); editing = emptyList() },
+        onSend = { items, pin -> vm.addWallpapers(items, pin); editing = emptyList() },
     )
     opened?.let { f -> WallpaperSheet(f, vm, onDismiss = { opened = null }) }
 
