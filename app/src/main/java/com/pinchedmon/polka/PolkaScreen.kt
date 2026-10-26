@@ -2,7 +2,14 @@ package com.pinchedmon.polka
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -60,6 +67,7 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.PushPin
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -116,6 +124,13 @@ fun PolkaScreen(vm: MainViewModel) {
     var askHost by remember { mutableStateOf(false) }
     var askFolder by remember { mutableStateOf(false) }
     var toDelete by remember { mutableStateOf<RemoteFile?>(null) }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
+    var editing by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var opened by remember { mutableStateOf<RemoteFile?>(null) }
+
+    val pickImages = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
+        if (uris.isNotEmpty()) editing = uris
+    }
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty()) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -157,6 +172,7 @@ fun PolkaScreen(vm: MainViewModel) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item { Header(vm, onAskHost = { askHost = true }) }
+            item { Segmented(listOf("Книги", "Заставки"), tab, { tab = it }) }
 
             item {
                 Hero(
@@ -164,16 +180,24 @@ fun PolkaScreen(vm: MainViewModel) {
                     busy = sending.isNotEmpty(),
                     progress = overall,
                     pops = pops,
+                    screenImage = if (tab == 1) vm.pinned?.let { vm.thumbs[it] } else null,
                     onTap = { vm.connect() },
                     onLongTap = { askHost = true },
                 )
             }
 
             item {
-                DropButton(
-                    online = vm.link is Link.Online,
-                    folder = vm.folder,
+                if (tab == 0) DropButton(
+                    text = "Закинуть книги",
+                    icon = Icons.Rounded.AutoStories,
+                    hint = if (vm.link is Link.Online) "летят в ${vm.folder} · или «Поделиться → На X4» из любого приложения"
+                    else "можно выбрать заранее — улетят, как только X4 появится",
                     onClick = { pick.launch(arrayOf("*/*")) },
+                ) else DropButton(
+                    text = "Добавить заставки",
+                    icon = Icons.Rounded.Wallpaper,
+                    hint = "любая картинка станет 480×800 BMP в ${MainViewModel.SLEEP_DIR}",
+                    onClick = { pickImages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                 )
             }
 
@@ -188,7 +212,16 @@ fun PolkaScreen(vm: MainViewModel) {
                 items(vm.queue, key = { "q${it.id}" }) { UploadRow(it, onRetry = { vm.retry(it) }) }
             }
 
-            if (vm.link is Link.Online) {
+            if (vm.link is Link.Online && tab == 1) {
+                item { SleepStatus(vm) }
+                item { SectionTitle("В ${MainViewModel.SLEEP_DIR}") }
+                if (vm.sleepFiles.isEmpty()) item { EmptyShelf() }
+                items(vm.sleepFiles.chunked(3), key = { r -> "s" + r.joinToString { it.name } }) { r ->
+                    SleepRow(r, vm, onTap = { opened = it })
+                }
+            }
+
+            if (vm.link is Link.Online && tab == 0) {
                 item {
                     LibraryHeader(
                         path = vm.browsePath,
@@ -210,6 +243,13 @@ fun PolkaScreen(vm: MainViewModel) {
             item { Spacer(Modifier.height(40.dp)) }
         }
     }
+
+    if (editing.isNotEmpty()) WallpaperEditor(
+        uris = editing,
+        onDismiss = { editing = emptyList() },
+        onSend = { crop, pin -> vm.addWallpapers(editing, crop, pin); editing = emptyList() },
+    )
+    opened?.let { f -> WallpaperSheet(f, vm, onDismiss = { opened = null }) }
 
     if (askHost) TextDialog(
         title = "Адрес читалки",
@@ -318,6 +358,7 @@ private fun Hero(
     busy: Boolean,
     progress: Float,
     pops: List<Long>,
+    screenImage: ImageBitmap?,
     onTap: () -> Unit,
     onLongTap: () -> Unit,
 ) {
@@ -420,7 +461,13 @@ private fun Hero(
                         )
                     }
                 }
-                is Link.Online -> {
+                is Link.Online -> if (screenImage != null && !busy) {
+                    drawImage(
+                        screenImage,
+                        dstOffset = IntOffset((left + m).toInt(), sTop.toInt()),
+                        dstSize = IntSize(sw.toInt(), sh.toInt()),
+                    )
+                } else {
                     // page of text, revealed by the upload progress
                     val shown = (lines * fill).toInt()
                     for (i in 0 until lines) {
@@ -491,7 +538,7 @@ private fun Pop() {
 }
 
 @Composable
-private fun DropButton(online: Boolean, folder: String, onClick: () -> Unit) {
+private fun DropButton(text: String, icon: ImageVector, hint: String, onClick: () -> Unit) {
     val p = LocalPalette.current
     val press = remember { MutableInteractionSource() }
     val pressed by press.collectIsPressedAsState()
@@ -508,14 +555,13 @@ private fun DropButton(online: Boolean, folder: String, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
-            Icon(Icons.Rounded.AutoStories, null, tint = Color.White)
+            Icon(icon, null, tint = Color.White)
             Spacer(Modifier.width(10.dp))
-            Text("Закинуть книги", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Text(text, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.height(8.dp))
         Text(
-            if (online) "летят в $folder · или «Поделиться → На X4» из любого приложения"
-            else "можно выбрать заранее — улетят, как только X4 появится",
+            hint,
             color = p.muted, fontSize = 12.sp, textAlign = TextAlign.Center,
         )
     }

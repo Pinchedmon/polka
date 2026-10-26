@@ -12,6 +12,7 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.BufferedSink
 import okio.source
 import org.json.JSONArray
@@ -34,6 +35,13 @@ data class RemoteFile(
     val isDirectory: Boolean,
     val isEpub: Boolean,
 )
+
+/** Firmware reports board names like "xteink_x4_pro"; show "X4 Pro". */
+private fun prettyDevice(raw: String): String {
+    val r = raw.lowercase()
+    val model = Regex("x\\d").find(r)?.value?.uppercase() ?: return raw
+    return if ("pro" in r) "$model Pro" else model
+}
 
 class X4Exception(message: String) : IOException(message)
 
@@ -63,7 +71,7 @@ class X4Api(network: Network?) {
             DeviceStatus(
                 host = host,
                 version = j.optString("version", "?"),
-                device = j.optString("device", "X4"),
+                device = prettyDevice(j.optString("device", "X4")),
                 mode = j.optString("mode", "STA"),
                 rssi = j.optInt("rssi", 0),
             )
@@ -94,6 +102,32 @@ class X4Api(network: Network?) {
 
     suspend fun delete(host: String, path: String) = post(
         host, "delete", FormBody.Builder().add("path", path).build()
+    )
+
+    suspend fun download(host: String, path: String): ByteArray = withContext(Dispatchers.IO) {
+        val url = base(host).newBuilder().addPathSegments("download")
+            .addQueryParameter("path", path).build()
+        client.newCall(Request.Builder().url(url).build()).execute().use { r ->
+            if (!r.isSuccessful) throw X4Exception("HTTP ${r.code}")
+            r.body!!.bytes()
+        }
+    }
+
+    /** Current value of one firmware setting (e.g. "sleepScreen"), or null if the firmware doesn't expose it. */
+    suspend fun setting(host: String, key: String): Int? = withContext(Dispatchers.IO) {
+        val url = base(host).newBuilder().addPathSegments("api/settings").build()
+        client.newCall(Request.Builder().url(url).build()).execute().use { r ->
+            if (!r.isSuccessful) return@use null
+            val arr = JSONArray(r.body!!.string())
+            (0 until arr.length()).map { arr.getJSONObject(it) }
+                .firstOrNull { it.optString("key") == key }
+                ?.takeIf { it.has("value") }?.optInt("value")
+        }
+    }
+
+    suspend fun setSetting(host: String, key: String, value: Int) = post(
+        host, "api/settings",
+        JSONObject().put(key, value).toString().toRequestBody("application/json".toMediaType())
     )
 
     private suspend fun post(host: String, endpoint: String, body: RequestBody) = withContext(Dispatchers.IO) {
