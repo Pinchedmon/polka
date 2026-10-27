@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Полиця</string>
+    <string name="share_label">На X4</string>
+
+    <string name="tab_books">Книги</string>
+    <string name="tab_sleep">Заставки</string>
+
+    <string name="status_searching">шукаю твою X4 у мережі…</string>
+    <string name="status_not_found">X4 не видно</string>
+    <string name="status_online">%1$s на зв\'язку · %2$s</string>
+    <string name="status_hotspot">хотспот</string>
+
+    <string name="hero_tap">Натисни на читалку, щоб знайти її</string>
+    <string name="hero_searching">шукаю…</string>
+    <string name="hero_refresh">натисни, щоб оновити</string>
+
+    <string name="guide_title">Як під\'єднатися</string>
+    <string name="guide_1">На X4 відкрий <b>Передачу файлів</b> (File Transfer) і під\'єднай її до Wi-Fi.</string>
+    <string name="guide_2">Телефон — у <b>ту саму Wi-Fi</b>. Або просто до хотспоту читалки «CrossPoint-Reader».</string>
+    <string name="guide_3"><b>Натисни на читалку вище</b> — Полиця знайде її сама.</string>
+    <string name="guide_manual">ввести адресу вручну</string>
+    <string name="guide_more">як усе влаштовано</string>
+
+    <string name="drop_books">Закинути книги</string>
+    <string name="drop_books_online">летять у %1$s · або «Поділитися → На X4» з будь-якого застосунку</string>
+    <string name="drop_books_offline">можна вибрати заздалегідь — полетять, щойно X4 з\'явиться</string>
+    <string name="drop_sleep">Додати заставки</string>
+    <string name="drop_sleep_hint">будь-яка картинка стане 480×800 BMP у %1$s</string>
+
+    <string name="queue_title">Летять</string>
+    <string name="queue_clear">прибрати готові</string>
+    <string name="state_waiting">чекає</string>
+    <string name="state_already">вже на полиці</string>
+    <string name="state_failed">%1$s · натисни, щоб повторити</string>
+    <string name="error_generic">помилка</string>
+
+    <string name="lib_title">На читалці</string>
+    <string name="lib_target">сюди летять книги</string>
+    <string name="lib_pin">кидати сюди</string>
+    <string name="lib_hint">натисни на теку, щоб відкрити · довге натискання — видалити</string>
+    <string name="lib_folder">тека</string>
+    <string name="empty">тут поки порожньо</string>
+
+    <string name="host_title">Адреса читалки</string>
+    <string name="host_hint">IP з екрана X4, наприклад 192.168.0.194</string>
+    <string name="host_connect">Під\'єднатися</string>
+    <string name="folder_title">Нова тека</string>
+    <string name="folder_hint">у %1$s</string>
+    <string name="folder_create">Створити</string>
+    <string name="cancel">Скасувати</string>
+
+    <string name="del_title">Прибрати з читалки?</string>
+    <string name="del_folder">Тека «%1$s» видалиться, лише якщо вона порожня.</string>
+    <string name="del_file">«%1$s» видалиться з картки X4.</string>
+    <string name="del_ok">Видалити</string>
+    <string name="del_keep">Залишити</string>
+
+    <string name="toast_nobody">За адресою %1$s ніхто не відповідає</string>
+    <string name="toast_target">Книги полетять у %1$s</string>
+    <string name="toast_failed">Не вийшло: %1$s</string>
+    <string name="toast_deleted">%1$s — видалено</string>
+    <string name="toast_img_fail">Не вдалося відкрити картинку</string>
+    <string name="toast_dl_fail">Не вийшло завантажити %1$s</string>
+    <string name="toast_random">Тепер щоразу випадкова з /sleep</string>
+    <string name="toast_custom_on">На читалці ввімкнено режим «Своя картинка»</string>
+
+    <string name="sleep_always">Завжди: %1$s</string>
+    <string name="sleep_random">Щоразу випадкова з /sleep</string>
+    <string name="sleep_back_random">повернути випадкові</string>
+    <string name="sleep_off">Читалка поки не показує твої картинки</string>
+    <string name="sleep_enable">увімкнути</string>
+    <string name="sleep_in">У %1$s</string>
+    <string name="sleep_hint">натисни на картинку, щоб закріпити або видалити</string>
+
+    <string name="ed_new">Нова заставка</string>
+    <string name="ed_count">Заставка %1$d з %2$d</string>
+    <string name="ed_failed">не відкрилася</string>
+    <string name="ed_gestures">щипок — масштаб · палець — рухати</string>
+    <string name="ed_fill">Заповнити</string>
+    <string name="ed_fit">Вписати</string>
+    <string name="ed_white">Поля: білі</string>
+    <string name="ed_black">Поля: чорні</string>
+    <string name="ed_prev">‹ назад</string>
+    <string name="ed_next">далі ›</string>
+    <string name="ed_set">Поставити на читалку</string>
+    <string name="ed_set_first">Закинути й поставити першу</string>
+    <string name="ed_collection">просто в колекцію (випадкова під час кожного сну)</string>
+
+    <string name="ws_pin">Показувати завжди цю</string>
+    <string name="ws_unpin">Відкріпити — знову випадкові</string>
+    <string name="ws_delete">видалити з читалки</string>
+
+    <string name="help_title">Як влаштована Полиця</string>
+    <string name="help_connect_t">Під\'єднання</string>
+    <string name="help_connect">На X4 відкрий «Передачу файлів» і під\'єднай її до Wi-Fi, телефон — у ту саму мережу. Полиця знаходить читалку сама. Якщо ні — натисни на намальовану читалку або затисни її й введи IP з екрана X4.</string>
+    <string name="help_books_t">Книги</string>
+    <string name="help_books">EPUB, FB2, TXT, PDF — будь-що. Кнопка «Закинути книги» або «Поділитися → На X4» у Telegram, браузері, «Файлах». Книги стають у чергу й летять, щойно читалка в мережі.</string>
+    <string name="help_shelf_t">Полиця</string>
+    <string name="help_shelf">Під кнопкою — те, що лежить на картці. Натисни на теку, щоб відкрити, «кидати сюди» робить її цільовою, довге натискання — видалити.</string>
+    <string name="help_sleep_t">Заставки</string>
+    <string name="help_sleep">Вибери картинки й підлаштуй кадр пальцями. «Поставити» — одна картинка завжди, решта з /sleep змінюються випадково.</string>
+    <string name="help_fw_t">Прошивка</string>
+    <string name="help_fw">Працює з CrossPoint та inkMOD. У заводській прошивці Xteink немає API передачі файлів.</string>
+    <string name="help_language">Мова</string>
+    <string name="help_lang_system">Як у системі</string>
+    <string name="help_github">Код на GitHub</string>
+    <string name="help_support">Підтримати автора</string>
+    <string name="help_ok">Зрозуміло</string>
+    <string name="help_version">Полиця %1$s · відкритий код, GPL-3.0</string>
+    <string name="cd_help">Допомога</string>
+
+    <string name="size_b">%1$d Б</string>
+    <string name="size_kb">%1$d КБ</string>
+    <string name="size_mb">%1$.1f МБ</string>
+</resources>

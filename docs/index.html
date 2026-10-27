@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polka — books to your Xteink X4 over Wi-Fi</title>
+<meta name="description" content="Android app to send books and sleep screens to the Xteink X4 / X4 Pro over Wi-Fi. Works with CrossPoint and inkMOD firmware. Open source.">
+<meta property="og:title" content="Polka — books to your Xteink X4 over Wi-Fi">
+<meta property="og:description" content="Send books and sleep screens to the Xteink X4 from your Android phone. No cables, no IP addresses.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F2EDE3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 108'%3E%3Crect width='108' height='108' rx='24' fill='%231C1A17'/%3E%3Crect x='32' y='30' width='44' height='48' rx='6' fill='%23F2EDE3'/%3E%3Crect x='37' y='35' width='34' height='32' rx='2' fill='%231C1A17'/%3E%3Cpath fill='%23F2EDE3' d='M42 41h20v2H42zM42 46h24v2H42zM42 51h16v2H42z'/%3E%3Cpath fill='%23E4572E' d='M51.5 55h5v6h4.5l-7 7-7-7h4.5z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F2EDE3; --card: #FBF8F2; --ink: #1C1A17; --muted: #8A8378; --line: #E2DBCD;
+  --ember: #E4572E; --ember-soft: rgba(228, 87, 46, .12); --moss: #5E7D4F; --screen: #EDE8DC;
+  --body: #1C1A17; --shadow: 0 30px 60px -30px rgba(28, 26, 23, .35);
+  --serif: "Literata", Georgia, serif; --sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #141311; --card: #1E1C19; --ink: #EFE9DD; --muted: #8E877B; --line: #2C2925;
+    --ember: #FF6B3D; --ember-soft: rgba(255, 107, 61, .14); --moss: #8DB27A; --screen: #D9D3C6;
+    --body: #D7D1C4; --shadow: 0 30px 60px -30px rgba(0, 0, 0, .8);
+  }
+}
+* { box-sizing: border-box; margin: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper); color: var(--ink); font: 16px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- top bar ---------- */
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; gap: 16px; }
+.brand { font: 700 26px/1 var(--serif); letter-spacing: -.5px; text-decoration: none; }
+.brand b, h1 b, h2 b { color: var(--ember); font-weight: inherit; }
+.langs { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); }
+.langs button {
+  border: 0; background: none; color: var(--muted); font: 500 13px var(--sans); padding: 6px 10px;
+  border-radius: 99px; cursor: pointer; transition: background .25s, color .25s;
+}
+.langs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+/* ---------- hero ---------- */
+.hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 48px 0 72px; }
+h1 { font: 700 clamp(44px, 8vw, 92px)/.95 var(--serif); letter-spacing: -2px; overflow-wrap: break-word; }
+.hero > *, .sleeps > *, .support > * { min-width: 0; }
+.lead { font-size: clamp(18px, 2.2vw, 21px); color: var(--body); margin: 22px 0 32px; max-width: 30ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; height: 58px; padding: 0 28px; border-radius: 99px;
+  font: 600 17px var(--sans); text-decoration: none; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1), box-shadow .2s;
+}
+.btn:active { transform: scale(.96); }
+.btn.primary { background: var(--ember); color: #fff; box-shadow: 0 12px 28px -12px var(--ember); }
+.btn.primary:hover { transform: translateY(-2px); }
+.btn.ghost { border: 1px solid var(--line); background: var(--card); }
+.btn svg { width: 20px; height: 20px; flex: none; }
+.fine { margin-top: 14px; color: var(--muted); font-size: 13px; }
+
+/* ---------- the drawn reader ---------- */
+.stage {
+  position: relative; aspect-ratio: 1 / 1.05; border-radius: 36px; background: var(--card);
+  border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ring { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--ember); opacity: 0; }
+.stage[data-state="search"] .ring { animation: sonar 2.2s linear infinite; }
+.stage[data-state="search"] .ring:nth-child(2) { animation-delay: .73s; }
+.stage[data-state="search"] .ring:nth-child(3) { animation-delay: 1.46s; }
+@keyframes sonar { from { transform: scale(.85); opacity: .45; } to { transform: scale(2); opacity: 0; } }
+.glow { position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%; background: var(--ember); opacity: 0; transition: opacity .6s; filter: blur(30px); }
+.stage[data-state="sleep"] .glow { opacity: .14; animation: breathe 2.6s ease-in-out infinite alternate; }
+@keyframes breathe { to { transform: scale(1.08); opacity: .22; } }
+
+.reader {
+  position: relative; width: 46%; aspect-ratio: 140 / 205; background: var(--ink); border-radius: 18px;
+  padding: 9% 9% 17%; box-shadow: var(--shadow); transition: transform .7s cubic-bezier(.3, 1.5, .5, 1);
+}
+.stage[data-state="sleep"] .reader { transform: rotate(-4deg); }
+.stage[data-state="online"] .reader { animation: float 2.6s ease-in-out infinite alternate; }
+@keyframes float { to { transform: translateY(-6px); } }
+.reader::after { content: ""; position: absolute; left: 50%; bottom: 7%; width: 20%; height: 2.5%; translate: -50%; border-radius: 4px; background: var(--paper); opacity: .25; }
+.screen { position: relative; height: 100%; border-radius: 6px; background: var(--screen); overflow: hidden; padding: 12% 11%; }
+.screen > * { position: absolute; inset: 0; transition: opacity .4s; opacity: 0; }
+.stage[data-state="sleep"] .eyes, .stage[data-state="search"] .cursor,
+.stage[data-state="online"] .page, .stage[data-state="pic"] .pic { opacity: 1; }
+.eyes { display: flex; gap: 22%; justify-content: center; align-items: center; padding-bottom: 20%; }
+.eyes i { width: 22%; aspect-ratio: 2; border: 3px solid #2A2723; border-top: 0; border-radius: 0 0 99px 99px; }
+.cursor::before { content: ""; position: absolute; left: 12%; top: 9%; width: 3px; height: 7%; background: #2A2723; animation: blink .9s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.page { padding: 11% 12%; display: flex; flex-direction: column; gap: 4.2%; }
+.page span { height: 3px; border-radius: 2px; background: #2A2723; opacity: .1; transition: opacity .25s; }
+.page span.on { opacity: .85; }
+.bar { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; top: auto; background: var(--ember); border-radius: 2px; opacity: 1 !important; }
+.pic svg { width: 100%; height: 100%; display: block; }
+.zzz { position: absolute; top: 15%; right: 22%; font: 500 20px var(--serif); color: var(--muted); opacity: 0; transition: opacity .4s; }
+.stage[data-state="sleep"] .zzz { opacity: 1; animation: zzz 2.6s ease-in-out infinite alternate; }
+@keyframes zzz { from { transform: translateY(0); opacity: .4; } to { transform: translateY(-10px); opacity: 1; } }
+.pop { position: absolute; font: 700 34px var(--serif); color: var(--ember); left: 60%; top: 40%; pointer-events: none; animation: pop 1.3s cubic-bezier(.2, .7, .3, 1) forwards; }
+@keyframes pop { from { transform: translateY(20px) scale(.7); opacity: 1; } to { transform: translateY(-130px) scale(1.3); opacity: 0; } }
+.pill {
+  position: absolute; bottom: 18px; left: 50%; translate: -50%; display: flex; align-items: center; gap: 6px;
+  padding: 7px 15px; border-radius: 99px; font-size: 13px; white-space: nowrap; transition: background .3s, color .3s;
+  background: var(--paper); color: var(--muted);
+}
+.stage[data-state="sleep"] .pill { background: var(--ember); color: #fff; font-weight: 600; }
+.pill svg { width: 16px; height: 16px; }
+
+/* ---------- sections ---------- */
+section { padding: 72px 0; }
+h2 { font: 700 clamp(32px, 4.6vw, 48px)/1.05 var(--serif); letter-spacing: -1px; margin-bottom: 14px; }
+.sub { color: var(--muted); max-width: 52ch; margin-bottom: 40px; font-size: 17px; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 26px; padding: 26px; }
+.step::before {
+  counter-increment: s; content: counter(s); display: grid; place-items: center; width: 34px; height: 34px;
+  border-radius: 50%; background: var(--line); font: 700 15px var(--sans); margin-bottom: 18px;
+}
+.step:last-child::before { background: var(--ember); color: #fff; }
+.step h3, .feat h3 { font: 600 20px/1.25 var(--serif); margin-bottom: 6px; }
+.step p, .feat p { color: var(--muted); font-size: 15px; }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feat { background: var(--card); border: 1px solid var(--line); border-radius: 26px; padding: 26px; transition: transform .3s; }
+.feat:hover { transform: translateY(-3px); }
+.ico { width: 44px; height: 44px; border-radius: 50%; background: var(--ember-soft); color: var(--ember); display: grid; place-items: center; margin-bottom: 18px; }
+.ico svg { width: 22px; height: 22px; }
+
+.sleeps { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+.minis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.mini { background: var(--ink); border-radius: 14px; padding: 7px 7px 16px; transition: transform .3s; }
+.mini:nth-child(2) { transform: translateY(-18px); outline: 2px solid var(--ember); outline-offset: 2px; }
+.mini > div { aspect-ratio: 3 / 5; border-radius: 4px; overflow: hidden; background: #fff; }
+.mini svg { width: 100%; height: 100%; display: block; }
+.checks { list-style: none; padding: 0; display: grid; gap: 12px; }
+.checks li { display: flex; gap: 12px; color: var(--body); }
+.checks li::before { content: ""; flex: none; width: 22px; height: 22px; margin-top: 2px; border-radius: 50%; background: var(--ember-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E4572E' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12l4 4 8-8'/%3E%3C/svg%3E") center / 14px no-repeat; }
+
+.faq { display: grid; gap: 10px; max-width: 760px; }
+details { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px 22px; }
+summary { cursor: pointer; font: 600 17px var(--serif); list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::after { content: "+"; color: var(--ember); font: 500 22px/1 var(--sans); transition: transform .25s; }
+details[open] summary::after { transform: rotate(45deg); }
+details p { color: var(--muted); margin-top: 10px; font-size: 15px; }
+
+.support {
+  background: var(--ink); color: var(--paper); border-radius: 36px; padding: clamp(32px, 6vw, 64px);
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; position: relative; overflow: hidden;
+}
+.support h2 { color: var(--paper); }
+.support p { color: var(--paper); opacity: .7; max-width: 44ch; }
+.support .cta { justify-content: flex-end; }
+.support .btn.ghost { background: transparent; border-color: rgba(255, 255, 255, .2); color: var(--paper); }
+.heart { position: absolute; right: -40px; top: -40px; width: 220px; opacity: .06; color: var(--paper); }
+
+footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s, transform .7s cubic-bezier(.2, .7, .3, 1); }
+.reveal.in { opacity: 1; transform: none; }
+
+@media (max-width: 860px) {
+  .hero, .sleeps, .support { grid-template-columns: 1fr; }
+  .hero { padding-top: 16px; gap: 36px; }
+  .stage { max-width: 440px; width: 100%; margin: 0 auto; }
+  .steps, .grid { grid-template-columns: 1fr; }
+  .support .cta { justify-content: flex-start; }
+  section { padding: 52px 0; }
+}
+@media (max-width: 520px) {
+  .wrap { padding: 0 16px; }
+  header.top { flex-wrap: wrap; }
+  .langs { overflow-x: auto; max-width: 100%; }
+  .btn { height: 54px; padding: 0 22px; font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#" data-i="name">Polka<b>.</b></a>
+    <nav class="langs" aria-label="Language">
+      <button data-lang="en">EN</button><button data-lang="ru">RU</button><button data-lang="uk">UK</button><button data-lang="de">DE</button><button data-lang="es">ES</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1 data-i="h1">Books to your X4.<br>Over the air<b>.</b></h1>
+        <p class="lead" data-i="lead">An Android app for the Xteink X4 and X4 Pro. It finds the reader on Wi-Fi by itself — you just pick books and pictures.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/Pinchedmon/polka/releases/latest/download/Polka.apk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg>
+            <span data-i="download">Download APK</span>
+          </a>
+          <a class="btn ghost" href="https://github.com/Pinchedmon/polka">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+            GitHub
+          </a>
+        </div>
+        <p class="fine" data-i="fine">Android 8+ · CrossPoint / inkMOD firmware · free and open source</p>
+      </div>
+
+      <div class="stage" id="stage" data-state="sleep" role="img" aria-label="Animated e-reader">
+        <div class="glow"></div>
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="reader">
+          <div class="screen">
+            <div class="eyes"><i></i><i></i></div>
+            <div class="cursor"></div>
+            <div class="page" id="page"></div>
+            <div class="pic">
+              <svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMid slice"><rect width="60" height="100" fill="#e9e6df"/><circle cx="40" cy="26" r="10" fill="#2a2723"/><circle cx="44" cy="23" r="9" fill="#e9e6df"/><path d="M0 72 L14 56 L24 66 L38 48 L60 70 V100 H0Z" fill="#6d6a64"/><path d="M0 82 L18 70 L34 80 L50 68 L60 74 V100 H0Z" fill="#2a2723"/><circle cx="12" cy="18" r="1" fill="#2a2723"/><circle cx="22" cy="30" r=".8" fill="#2a2723"/><circle cx="52" cy="44" r=".8" fill="#2a2723"/></svg>
+            </div>
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+        <span class="zzz">z z z</span>
+        <div class="pill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v3.74a4.5 4.5 0 1 0-5 0zm9.84 4.63-4.54-2.26a1.28 1.28 0 0 0-.56-.13H13v-6a1.5 1.5 0 0 0-3 0v10.74l-3.43-.72a1.13 1.13 0 0 0-.99 1.89l4.24 4.24c.37.37.88.58 1.41.58h6.11c1 0 1.84-.73 1.98-1.72l.63-4.47a2 2 0 0 0-1.11-2.15z"/></svg><span id="pill" data-i="tap">Tap the reader to find it</span></div>
+      </div>
+    </div>
+
+    <section id="how" class="reveal">
+      <h2 data-i="how_t">Three steps<b>.</b></h2>
+      <p class="sub" data-i="how_s">No addresses, no browser. The app talks to the reader the way the firmware itself expects.</p>
+      <div class="steps">
+        <div class="step"><h3 data-i="s1_t">File Transfer on the X4</h3><p data-i="s1">Open File Transfer on the reader and join your Wi-Fi — or start its own hotspot.</p></div>
+        <div class="step"><h3 data-i="s2_t">Same network</h3><p data-i="s2">The phone and the reader on one Wi-Fi. That's all the setup there is.</p></div>
+        <div class="step"><h3 data-i="s3_t">Tap the reader</h3><p data-i="s3">Polka finds the X4 by itself. Then just press «Send books».</p></div>
+      </div>
+    </section>
+
+    <section id="features" class="reveal">
+      <h2 data-i="feat_t">What it does<b>.</b></h2>
+      <p class="sub" data-i="feat_s">Small, quiet and made for one device — the Xteink X4.</p>
+      <div class="grid">
+        <div class="feat"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg></div><h3 data-i="f1_t">Finds the reader</h3><p data-i="f1">Firmware discovery over UDP, the last known address, crosspoint.local and the reader's hotspot — all at once.</p></div>
+        <div class="feat"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5zM12 6.5v13"/></svg></div><h3 data-i="f2_t">Books in one tap</h3><p data-i="f2">EPUB, FB2, TXT, PDF — anything. Pick them offline; they fly as soon as the X4 shows up.</p></div>
+        <div class="feat"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg></div><h3 data-i="f3_t">Share → To X4</h3><p data-i="f3">Send a book straight from Telegram, a browser or Files — Polka is in the share menu.</p></div>
+        <div class="feat"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><h3 data-i="f4_t">The shelf</h3><p data-i="f4">See what's on the card, open folders, choose where books land, create and delete.</p></div>
+        <div class="feat"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8 16l3-3.5 2 2 3-3.5"/><circle cx="10" cy="8" r="1.3"/></svg></div><h3 data-i="f5_t">Sleep screens</h3><p data-i="f5">Any picture becomes a 480×800 e-ink sleep screen. Frame it with your fingers.</p></div>
+        <div class="feat"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.8 6 3.8 9.5S14.6 18.7 12 21.5C9.4 18.7 8.2 15.5 8.2 12S9.4 5.3 12 2.5z"/></svg></div><h3 data-i="f6_t">Five languages</h3><p data-i="f6">English, Русский, Українська, Deutsch, Español. Light and dark theme.</p></div>
+      </div>
+    </section>
+
+    <section id="sleep" class="reveal">
+      <div class="sleeps">
+        <div class="minis" aria-hidden="true">
+          <div class="mini"><div><svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMid slice"><rect width="60" height="100" fill="#f4f2ee"/><path d="M0 60c10-6 20 6 30 0s20-6 30 0v40H0z" fill="#b9b5ad"/><path d="M0 70c10-6 20 6 30 0s20-6 30 0v30H0z" fill="#6d6a64"/><path d="M0 82c10-6 20 6 30 0s20-6 30 0v18H0z" fill="#2a2723"/><circle cx="30" cy="30" r="9" fill="#2a2723"/></svg></div></div>
+          <div class="mini"><div><svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMid slice"><rect width="60" height="100" fill="#e9e6df"/><circle cx="40" cy="26" r="10" fill="#2a2723"/><circle cx="44" cy="23" r="9" fill="#e9e6df"/><path d="M0 72 L14 56 L24 66 L38 48 L60 70 V100 H0Z" fill="#6d6a64"/><path d="M0 82 L18 70 L34 80 L50 68 L60 74 V100 H0Z" fill="#2a2723"/></svg></div></div>
+          <div class="mini"><div><svg viewBox="0 0 60 100" preserveAspectRatio="xMidYMid slice"><rect width="60" height="100" fill="#fff"/><g fill="none" stroke="#2a2723" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 66c0-12 6-20 12-20s12 8 12 20"/><path d="M22 50l-3-9 8 5M38 50l3-9-8 5"/><path d="M26 56h.1M34 56h.1M28.5 60.5c1 1 2 1 3 0"/><path d="M42 64c6 0 8 6 4 10"/></g><path d="M8 82h44" stroke="#2a2723" stroke-width="2.2" stroke-linecap="round"/></svg></div></div>
+        </div>
+        <div>
+          <h2 data-i="sl_t">Sleep screens, made right<b>.</b></h2>
+          <ul class="checks">
+            <li data-i="sl1">Pinch, drag, rotate — the preview is the real 480×800 grayscale screen.</li>
+            <li data-i="sl2">«Set» pins one picture; the rest of /sleep rotates randomly.</li>
+            <li data-i="sl3">Custom sleep mode on the reader is switched on for you.</li>
+            <li data-i="sl4">Your /sleep collection, with previews, right in the app.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="reveal">
+      <h2 data-i="faq_t">Questions<b>.</b></h2>
+      <div class="faq">
+        <details><summary data-i="q1">Which firmware do I need?</summary><p data-i="a1">CrossPoint or inkMOD. The stock Xteink firmware has no file transfer API, so Polka can't talk to it.</p></details>
+        <details><summary data-i="q2">The app can't find my reader</summary><p data-i="a2">Make sure File Transfer is open on the X4 and both devices are on the same Wi-Fi. Some routers block discovery — then long-press the drawn reader and type the IP shown on the X4 screen.</p></details>
+        <details><summary data-i="q3">Is there an iPhone version?</summary><p data-i="a3">Not yet — Polka is Android only for now.</p></details>
+        <details><summary data-i="q4">Android says the app is from an unknown source</summary><p data-i="a4">That's normal for apps outside Google Play. The APK is built from the open source code on GitHub.</p></details>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="support">
+        <svg class="heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>
+        <div>
+          <h2 data-i="sup_t">Support Polka<b>.</b></h2>
+          <p data-i="sup">Polka is free and open source. If it saved you an evening with cables, you can thank the author.</p>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="https://new.donatepay.ru/donate/1536180">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>
+            <span data-i="sup_b">Support</span>
+          </a>
+          <a class="btn ghost" href="https://github.com/Pinchedmon/polka" data-i="star">Star on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span data-i="foot">Polka · GPL-3.0 · not affiliated with Xteink</span>
+    <span><a href="https://github.com/crosspoint-reader/crosspoint-reader">CrossPoint</a> · <a href="https://github.com/alpzoloto-sudo/inkmod">inkMOD</a></span>
+  </footer>
+</div>
+
+<script>
+const T = {
+  en: {
+    name: 'Polka<b>.</b>', h1: 'Books to your X4.<br>Over the air<b>.</b>',
+    lead: 'An Android app for the Xteink X4 and X4 Pro. It finds the reader on Wi-Fi by itself — you just pick books and pictures.',
+    download: 'Download APK', fine: 'Android 8+ · CrossPoint / inkMOD firmware · free and open source',
+    tap: 'Tap the reader to find it', searching: 'searching…', online: 'X4 connected', sending: 'sending books…',
+    how_t: 'Three steps<b>.</b>', how_s: 'No addresses, no browser. The app talks to the reader the way the firmware itself expects.',
+    s1_t: 'File Transfer on the X4', s1: 'Open File Transfer on the reader and join your Wi-Fi — or start its own hotspot.',
+    s2_t: 'Same network', s2: "The phone and the reader on one Wi-Fi. That's all the setup there is.",
+    s3_t: 'Tap the reader', s3: 'Polka finds the X4 by itself. Then just press «Send books».',
+    feat_t: 'What it does<b>.</b>', feat_s: 'Small, quiet and made for one device — the Xteink X4.',
+    f1_t: 'Finds the reader', f1: "Firmware discovery over UDP, the last known address, crosspoint.local and the reader's hotspot — all at once.",
+    f2_t: 'Books in one tap', f2: 'EPUB, FB2, TXT, PDF — anything. Pick them offline; they fly as soon as the X4 shows up.',
+    f3_t: 'Share → To X4', f3: 'Send a book straight from Telegram, a browser or Files — Polka is in the share menu.',
+    f4_t: 'The shelf', f4: "See what's on the card, open folders, choose where books land, create and delete.",
+    f5_t: 'Sleep screens', f5: 'Any picture becomes a 480×800 e-ink sleep screen. Frame it with your fingers.',
+    f6_t: 'Five languages', f6: 'English, Русский, Українська, Deutsch, Español. Light and dark theme.',
+    sl_t: 'Sleep screens, made right<b>.</b>',
+    sl1: 'Pinch, drag, rotate — the preview is the real 480×800 grayscale screen.',
+    sl2: '«Set» pins one picture; the rest of /sleep rotates randomly.',
+    sl3: 'Custom sleep mode on the reader is switched on for you.',
+    sl4: 'Your /sleep collection, with previews, right in the app.',
+    faq_t: 'Questions<b>.</b>',
+    q1: 'Which firmware do I need?', a1: "CrossPoint or inkMOD. The stock Xteink firmware has no file transfer API, so Polka can't talk to it.",
+    q2: "The app can't find my reader", a2: 'Make sure File Transfer is open on the X4 and both devices are on the same Wi-Fi. Some routers block discovery — then long-press the drawn reader and type the IP shown on the X4 screen.',
+    q3: 'Is there an iPhone version?', a3: 'Not yet — Polka is Android only for now.',
+    q4: 'Android says the app is from an unknown source', a4: "That's normal for apps outside Google Play. The APK is built from the open source code on GitHub.",
+    sup_t: 'Support Polka<b>.</b>', sup: 'Polka is free and open source. If it saved you an evening with cables, you can thank the author.',
+    sup_b: 'Support', star: 'Star on GitHub', foot: 'Polka · GPL-3.0 · not affiliated with Xteink',
+    title: 'Polka — books to your Xteink X4 over Wi-Fi',
+  },
+  ru: {
+    name: 'Полка<b>.</b>', h1: 'Книги на X4.<br>По воздуху<b>.</b>',
+    lead: 'Android-приложение для Xteink X4 и X4 Pro. Само находит читалку в Wi-Fi — тебе остаётся выбрать книги и картинки.',
+    download: 'Скачать APK', fine: 'Android 8+ · прошивка CrossPoint / inkMOD · бесплатно, открытый код',
+    tap: 'Нажми на читалку, чтобы найти её', searching: 'ищу…', online: 'X4 на связи', sending: 'летят книги…',
+    how_t: 'Три шага<b>.</b>', how_s: 'Без адресов и браузера. Приложение говорит с читалкой так, как этого ждёт сама прошивка.',
+    s1_t: 'Передача файлов на X4', s1: 'Открой на читалке «Передачу файлов» и подключи её к Wi-Fi — или включи её собственный хотспот.',
+    s2_t: 'Одна сеть', s2: 'Телефон и читалка в одной Wi-Fi. Это вся настройка.',
+    s3_t: 'Нажми на читалку', s3: 'Полка сама найдёт X4. Дальше — просто «Закинуть книги».',
+    feat_t: 'Что умеет<b>.</b>', feat_s: 'Маленькая, тихая и сделанная для одного устройства — Xteink X4.',
+    f1_t: 'Находит читалку', f1: 'UDP-поиск прошивки, последний адрес, crosspoint.local и хотспот читалки — всё сразу.',
+    f2_t: 'Книги в один тап', f2: 'EPUB, FB2, TXT, PDF — что угодно. Можно выбрать заранее: улетят, как только X4 появится.',
+    f3_t: 'Поделиться → На X4', f3: 'Отправь книгу прямо из Telegram, браузера или «Файлов» — Полка есть в меню «Поделиться».',
+    f4_t: 'Полка на карте', f4: 'Видно, что лежит на карте: папки, куда падают книги, создание и удаление.',
+    f5_t: 'Заставки', f5: 'Любая картинка станет заставкой 480×800 для e-ink. Кадр подгоняется пальцами.',
+    f6_t: 'Пять языков', f6: 'English, Русский, Українська, Deutsch, Español. Светлая и тёмная тема.',
+    sl_t: 'Заставки как надо<b>.</b>',
+    sl1: 'Щипок, перетаскивание, поворот — превью показывает настоящий экран 480×800 в оттенках серого.',
+    sl2: '«Поставить» закрепляет одну картинку, остальные из /sleep меняются случайно.',
+    sl3: 'Режим «Своя картинка» на читалке включается сам.',
+    sl4: 'Вся коллекция /sleep с превью — прямо в приложении.',
+    faq_t: 'Вопросы<b>.</b>',
+    q1: 'Какая нужна прошивка?', a1: 'CrossPoint или inkMOD. У заводской прошивки Xteink нет API передачи файлов, Полка не сможет с ней говорить.',
+    q2: 'Приложение не находит читалку', a2: 'Проверь, что на X4 открыта «Передача файлов» и оба устройства в одной Wi-Fi. Некоторые роутеры режут поиск — тогда зажми нарисованную читалку и введи IP с экрана X4.',
+    q3: 'Есть версия для iPhone?', a3: 'Пока нет — Полка только для Android.',
+    q4: 'Android пишет, что приложение из неизвестного источника', a4: 'Это нормально для приложений не из Google Play. APK собирается из открытого кода на GitHub.',
+    sup_t: 'Поддержать Полку<b>.</b>', sup: 'Полка бесплатная и с открытым кодом. Если она сэкономила тебе вечер с проводами — можно сказать автору спасибо.',
+    sup_b: 'Поддержать', star: 'Звезда на GitHub', foot: 'Полка · GPL-3.0 · не связана с Xteink',
+    title: 'Полка — книги на Xteink X4 по Wi-Fi',
+  },
+  uk: {
+    name: 'Полиця<b>.</b>', h1: 'Книги на X4.<br>Повітрям<b>.</b>',
+    lead: 'Android-застосунок для Xteink X4 і X4 Pro. Сам знаходить читалку у Wi-Fi — тобі лишається вибрати книги й картинки.',
+    download: 'Завантажити APK', fine: 'Android 8+ · прошивка CrossPoint / inkMOD · безкоштовно, відкритий код',
+    tap: 'Натисни на читалку, щоб знайти її', searching: 'шукаю…', online: "X4 на зв'язку", sending: 'летять книги…',
+    how_t: 'Три кроки<b>.</b>', how_s: 'Без адрес і браузера. Застосунок говорить з читалкою так, як цього чекає сама прошивка.',
+    s1_t: 'Передача файлів на X4', s1: "Відкрий на читалці «Передачу файлів» і під'єднай її до Wi-Fi — або ввімкни її власний хотспот.",
+    s2_t: 'Одна мережа', s2: 'Телефон і читалка в одній Wi-Fi. Це все налаштування.',
+    s3_t: 'Натисни на читалку', s3: 'Полиця сама знайде X4. Далі — просто «Закинути книги».',
+    feat_t: 'Що вміє<b>.</b>', feat_s: 'Маленька, тиха й зроблена для одного пристрою — Xteink X4.',
+    f1_t: 'Знаходить читалку', f1: 'UDP-пошук прошивки, остання адреса, crosspoint.local і хотспот читалки — усе одразу.',
+    f2_t: 'Книги в один дотик', f2: "EPUB, FB2, TXT, PDF — будь-що. Можна вибрати заздалегідь: полетять, щойно X4 з'явиться.",
+    f3_t: 'Поділитися → На X4', f3: 'Надішли книгу просто з Telegram, браузера чи «Файлів» — Полиця є в меню «Поділитися».',
+    f4_t: 'Полиця на картці', f4: 'Видно, що лежить на картці: теки, куди падають книги, створення й видалення.',
+    f5_t: 'Заставки', f5: 'Будь-яка картинка стане заставкою 480×800 для e-ink. Кадр підлаштовується пальцями.',
+    f6_t: "П'ять мов", f6: 'English, Русский, Українська, Deutsch, Español. Світла й темна тема.',
+    sl_t: 'Заставки як слід<b>.</b>',
+    sl1: 'Щипок, перетягування, поворот — прев\'ю показує справжній екран 480×800 у відтінках сірого.',
+    sl2: '«Поставити» закріплює одну картинку, решта з /sleep змінюються випадково.',
+    sl3: 'Режим «Своя картинка» на читалці вмикається сам.',
+    sl4: "Уся колекція /sleep з прев'ю — просто в застосунку.",
+    faq_t: 'Питання<b>.</b>',
+    q1: 'Яка потрібна прошивка?', a1: 'CrossPoint або inkMOD. У заводській прошивці Xteink немає API передачі файлів, Полиця не зможе з нею говорити.',
+    q2: 'Застосунок не знаходить читалку', a2: 'Перевір, що на X4 відкрита «Передача файлів» і обидва пристрої в одній Wi-Fi. Деякі роутери ріжуть пошук — тоді затисни намальовану читалку й введи IP з екрана X4.',
+    q3: 'Є версія для iPhone?', a3: 'Поки ні — Полиця лише для Android.',
+    q4: 'Android пише, що застосунок з невідомого джерела', a4: 'Це нормально для застосунків не з Google Play. APK збирається з відкритого коду на GitHub.',
+    sup_t: 'Підтримати Полицю<b>.</b>', sup: 'Полиця безкоштовна й з відкритим кодом. Якщо вона зекономила тобі вечір з дротами — можна подякувати автору.',
+    sup_b: 'Підтримати', star: 'Зірка на GitHub', foot: "Полиця · GPL-3.0 · не пов'язана з Xteink",
+    title: 'Полиця — книги на Xteink X4 через Wi-Fi',
+  },
+  de: {
+    name: 'Polka<b>.</b>', h1: 'Bücher auf den X4.<br>Durch die Luft<b>.</b>',
+    lead: 'Eine Android-App für Xteink X4 und X4 Pro. Sie findet den Reader im WLAN selbst — du wählst nur Bücher und Bilder.',
+    download: 'APK herunterladen', fine: 'Android 8+ · Firmware CrossPoint / inkMOD · kostenlos und Open Source',
+    tap: 'Tippe auf den Reader, um ihn zu finden', searching: 'suche…', online: 'X4 verbunden', sending: 'Bücher fliegen…',
+    how_t: 'Drei Schritte<b>.</b>', how_s: 'Keine Adressen, kein Browser. Die App spricht mit dem Reader so, wie es die Firmware erwartet.',
+    s1_t: 'File Transfer am X4', s1: 'Öffne am Reader File Transfer und verbinde ihn mit dem WLAN — oder starte seinen eigenen Hotspot.',
+    s2_t: 'Gleiches Netz', s2: 'Handy und Reader im selben WLAN. Mehr Einrichtung gibt es nicht.',
+    s3_t: 'Auf den Reader tippen', s3: 'Polka findet den X4 selbst. Dann einfach «Bücher senden».',
+    feat_t: 'Was sie kann<b>.</b>', feat_s: 'Klein, leise und für ein Gerät gemacht — den Xteink X4.',
+    f1_t: 'Findet den Reader', f1: 'UDP-Erkennung der Firmware, letzte Adresse, crosspoint.local und der Hotspot des Readers — alles gleichzeitig.',
+    f2_t: 'Bücher mit einem Tipp', f2: 'EPUB, FB2, TXT, PDF — alles. Schon offline auswählen; sie fliegen, sobald der X4 auftaucht.',
+    f3_t: 'Teilen → Auf X4', f3: 'Ein Buch direkt aus Telegram, dem Browser oder Dateien senden — Polka steht im Teilen-Menü.',
+    f4_t: 'Das Regal', f4: 'Sieh, was auf der Karte liegt, öffne Ordner, wähle das Ziel, erstelle und lösche.',
+    f5_t: 'Sleep-Bilder', f5: 'Jedes Bild wird zum 480×800 E-Ink-Sleep-Bild. Mit den Fingern zuschneiden.',
+    f6_t: 'Fünf Sprachen', f6: 'English, Русский, Українська, Deutsch, Español. Helles und dunkles Design.',
+    sl_t: 'Sleep-Bilder, richtig gemacht<b>.</b>',
+    sl1: 'Kneifen, ziehen, drehen — die Vorschau ist der echte 480×800-Bildschirm in Graustufen.',
+    sl2: '«Setzen» heftet ein Bild an; der Rest von /sleep wechselt zufällig.',
+    sl3: 'Der eigene Sleep-Modus am Reader wird für dich eingeschaltet.',
+    sl4: 'Deine /sleep-Sammlung mit Vorschau, direkt in der App.',
+    faq_t: 'Fragen<b>.</b>',
+    q1: 'Welche Firmware brauche ich?', a1: 'CrossPoint oder inkMOD. Die Original-Firmware von Xteink hat keine File-Transfer-API.',
+    q2: 'Die App findet meinen Reader nicht', a2: 'Prüfe, ob am X4 File Transfer offen ist und beide Geräte im selben WLAN sind. Manche Router blockieren die Erkennung — dann den gezeichneten Reader lange drücken und die IP vom X4-Bildschirm eingeben.',
+    q3: 'Gibt es eine iPhone-Version?', a3: 'Noch nicht — Polka gibt es vorerst nur für Android.',
+    q4: 'Android meldet eine unbekannte Quelle', a4: 'Das ist normal für Apps außerhalb von Google Play. Die APK wird aus dem Open-Source-Code auf GitHub gebaut.',
+    sup_t: 'Polka unterstützen<b>.</b>', sup: 'Polka ist kostenlos und Open Source. Wenn sie dir einen Abend mit Kabeln erspart hat, kannst du dem Autor danken.',
+    sup_b: 'Unterstützen', star: 'Stern auf GitHub', foot: 'Polka · GPL-3.0 · nicht mit Xteink verbunden',
+    title: 'Polka — Bücher per WLAN auf den Xteink X4',
+  },
+  es: {
+    name: 'Polka<b>.</b>', h1: 'Libros a tu X4.<br>Por el aire<b>.</b>',
+    lead: 'Una app Android para el Xteink X4 y X4 Pro. Encuentra el lector en la Wi-Fi sola — tú solo eliges libros e imágenes.',
+    download: 'Descargar APK', fine: 'Android 8+ · firmware CrossPoint / inkMOD · gratis y de código abierto',
+    tap: 'Toca el lector para encontrarlo', searching: 'buscando…', online: 'X4 conectado', sending: 'volando libros…',
+    how_t: 'Tres pasos<b>.</b>', how_s: 'Sin direcciones ni navegador. La app habla con el lector como lo espera el propio firmware.',
+    s1_t: 'File Transfer en el X4', s1: 'Abre File Transfer en el lector y conéctalo a tu Wi-Fi — o inicia su propio punto de acceso.',
+    s2_t: 'La misma red', s2: 'El móvil y el lector en una misma Wi-Fi. Esa es toda la configuración.',
+    s3_t: 'Toca el lector', s3: 'Polka encuentra el X4 sola. Luego pulsa «Enviar libros».',
+    feat_t: 'Qué hace<b>.</b>', feat_s: 'Pequeña, tranquila y hecha para un dispositivo — el Xteink X4.',
+    f1_t: 'Encuentra el lector', f1: 'Descubrimiento UDP del firmware, la última dirección, crosspoint.local y el punto de acceso del lector — todo a la vez.',
+    f2_t: 'Libros con un toque', f2: 'EPUB, FB2, TXT, PDF — lo que sea. Elígelos sin conexión; volarán en cuanto aparezca el X4.',
+    f3_t: 'Compartir → Al X4', f3: 'Envía un libro directamente desde Telegram, el navegador o Archivos — Polka está en el menú Compartir.',
+    f4_t: 'El estante', f4: 'Mira qué hay en la tarjeta, abre carpetas, elige el destino, crea y borra.',
+    f5_t: 'Pantallas de reposo', f5: 'Cualquier imagen se convierte en una pantalla de reposo e-ink de 480×800. Encuádrala con los dedos.',
+    f6_t: 'Cinco idiomas', f6: 'English, Русский, Українська, Deutsch, Español. Tema claro y oscuro.',
+    sl_t: 'Pantallas de reposo, bien hechas<b>.</b>',
+    sl1: 'Pellizca, arrastra, gira — la vista previa es la pantalla real de 480×800 en grises.',
+    sl2: '«Poner» fija una imagen; el resto de /sleep rota al azar.',
+    sl3: 'El modo de reposo propio del lector se activa por ti.',
+    sl4: 'Tu colección /sleep, con vistas previas, dentro de la app.',
+    faq_t: 'Preguntas<b>.</b>',
+    q1: '¿Qué firmware necesito?', a1: 'CrossPoint o inkMOD. El firmware original de Xteink no tiene API de transferencia de archivos.',
+    q2: 'La app no encuentra mi lector', a2: 'Comprueba que File Transfer está abierto en el X4 y que ambos están en la misma Wi-Fi. Algunos routers bloquean el descubrimiento — mantén pulsado el lector dibujado e introduce la IP de la pantalla del X4.',
+    q3: '¿Hay versión para iPhone?', a3: 'Todavía no — Polka es solo para Android por ahora.',
+    q4: 'Android dice que la app es de origen desconocido', a4: 'Es normal para apps fuera de Google Play. El APK se compila desde el código abierto en GitHub.',
+    sup_t: 'Apoya Polka<b>.</b>', sup: 'Polka es gratis y de código abierto. Si te ahorró una tarde con cables, puedes darle las gracias al autor.',
+    sup_b: 'Apoyar', star: 'Estrella en GitHub', foot: 'Polka · GPL-3.0 · sin relación con Xteink',
+    title: 'Polka — libros a tu Xteink X4 por Wi-Fi',
+  },
+};
+
+let lang = 'en';
+function pickLang() {
+  const q = new URLSearchParams(location.search).get('lang');
+  let saved = null;
+  try { saved = localStorage.getItem('polka-lang'); } catch (e) {}
+  const nav = (navigator.languages || [navigator.language || 'en']).map(l => l.slice(0, 2));
+  return [q, saved, ...nav].find(l => l && T[l]) || 'en';
+}
+function setLang(l) {
+  lang = l;
+  const t = T[l];
+  document.documentElement.lang = l;
+  document.title = t.title;
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const v = t[el.dataset.i];
+    if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll('.langs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === l));
+  try { localStorage.setItem('polka-lang', l); } catch (e) {}
+  updatePill();
+}
+document.querySelectorAll('.langs button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+/* ---------- the reader's little story: asleep → searching → found → books fly in → sleep screen ---------- */
+const stage = document.getElementById('stage');
+const page = document.getElementById('page');
+const bar = document.getElementById('bar');
+const pill = document.getElementById('pill');
+const LINES = 14;
+for (let i = 0; i < LINES; i++) {
+  const s = document.createElement('span');
+  s.style.width = (i % 5 === 4 ? 45 : 72 + (i * 37) % 23) + '%';
+  page.appendChild(s);
+}
+const spans = [...page.children];
+let timers = [];
+function later(ms, fn) { timers.push(setTimeout(fn, ms)); }
+function updatePill() {
+  const st = stage.dataset.state;
+  pill.textContent = T[lang][st === 'sleep' ? 'tap' : st === 'search' ? 'searching' : st === 'online' ? 'sending' : 'online'];
+}
+function state(s) { stage.dataset.state = s; updatePill(); }
+function popOne() {
+  const p = document.createElement('span');
+  p.className = 'pop'; p.textContent = '+1';
+  stage.appendChild(p);
+  setTimeout(() => p.remove(), 1400);
+}
+function fill(progress) {
+  const n = Math.round(LINES * progress);
+  spans.forEach((s, i) => s.classList.toggle('on', i < n));
+  bar.style.width = (progress * 100) + '%';
+}
+function run() {
+  timers.forEach(clearTimeout); timers = [];
+  fill(0); state('search');
+  later(2600, () => {
+    state('online');
+    let p = 0;
+    const tick = () => {
+      p = Math.min(1, p + 0.05); fill(p);
+      if (Math.abs(p - 0.35) < 0.026 || Math.abs(p - 0.7) < 0.026 || p >= 1) popOne();
+      if (p < 1) later(120, tick); else later(1400, () => { bar.style.width = 0; state('pic'); later(3200, () => state('sleep')); });
+    };
+    later(500, tick);
+  });
+}
+stage.addEventListener('click', run);
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  setTimeout(run, 1600);
+  setInterval(() => { if (stage.dataset.state === 'sleep') run(); }, 14000);
+}
+
+/* reveal on scroll */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+setLang(pickLang());
+</script>
+</body>
+</html>

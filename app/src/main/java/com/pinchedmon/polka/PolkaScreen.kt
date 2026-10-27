@@ -68,6 +68,17 @@ import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.PushPin
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Wallpaper
+import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.automirrored.rounded.HelpOutline
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.annotation.StringRes
+import android.graphics.Typeface
+import android.text.Spanned
+import android.text.style.StyleSpan
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -145,12 +156,13 @@ fun PolkaScreen(vm: MainViewModel) {
             scope.launch { kotlinx.coroutines.delay(1400); pops.remove(id) }
         }
     }
-    LaunchedEffect(Unit) { vm.toast.collect { snack.showSnackbar(it) } }
+    val ctx = LocalContext.current
+    LaunchedEffect(Unit) { vm.toast.collect { snack.showSnackbar(ctx.getString(it.id, *it.args)) } }
     LaunchedEffect(vm.link) {
         if (vm.link is Link.Online) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
     }
 
-    BackHandler(enabled = vm.browsePath != vm.folder && vm.browsePath != "/") { vm.up() }
+    BackHandler(enabled = tab == 0 && vm.browsePath != vm.folder && vm.browsePath != "/") { vm.up() }
 
     val sending = vm.queue.filter { it.state == UploadState.Sending || it.state == UploadState.Waiting }
     val overall = if (vm.queue.isEmpty()) 0f else {
@@ -171,8 +183,8 @@ fun PolkaScreen(vm: MainViewModel) {
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { Header(vm, onAskHost = { askHost = true }) }
-            item { Segmented(listOf("Книги", "Заставки"), tab, { tab = it }) }
+            item { Header(vm) }
+            item { Segmented(listOf(stringResource(R.string.tab_books), stringResource(R.string.tab_sleep)), tab, { tab = it }) }
 
             item {
                 Hero(
@@ -181,22 +193,26 @@ fun PolkaScreen(vm: MainViewModel) {
                     progress = overall,
                     pops = pops,
                     screenImage = if (tab == 1) vm.pinned?.let { vm.thumbs[it] } else null,
-                    onTap = { vm.connect() },
+                    onTap = vm::tapReader,
                     onLongTap = { askHost = true },
                 )
             }
 
+            if (vm.link == Link.NotFound) {
+                item { ConnectGuide(onManual = { askHost = true }, onHelp = vm::openHelp) }
+            }
+
             item {
                 if (tab == 0) DropButton(
-                    text = "Закинуть книги",
+                    text = stringResource(R.string.drop_books),
                     icon = Icons.Rounded.AutoStories,
-                    hint = if (vm.link is Link.Online) "летят в ${vm.folder} · или «Поделиться → На X4» из любого приложения"
-                    else "можно выбрать заранее — улетят, как только X4 появится",
+                    hint = if (vm.link is Link.Online) stringResource(R.string.drop_books_online, vm.folder)
+                    else stringResource(R.string.drop_books_offline),
                     onClick = { pick.launch(arrayOf("*/*")) },
                 ) else DropButton(
-                    text = "Добавить заставки",
+                    text = stringResource(R.string.drop_sleep),
                     icon = Icons.Rounded.Wallpaper,
-                    hint = "любая картинка станет 480×800 BMP в ${MainViewModel.SLEEP_DIR}",
+                    hint = stringResource(R.string.drop_sleep_hint, MainViewModel.SLEEP_DIR),
                     onClick = { pickImages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                 )
             }
@@ -204,9 +220,9 @@ fun PolkaScreen(vm: MainViewModel) {
             if (vm.queue.isNotEmpty()) {
                 item {
                     SectionTitle(
-                        "Летят",
+                        stringResource(R.string.queue_title),
                         action = if (vm.queue.any { it.state == UploadState.Done || it.state == UploadState.AlreadyThere })
-                            "убрать готовые" to vm::clearFinished else null,
+                            stringResource(R.string.queue_clear) to vm::clearFinished else null,
                     )
                 }
                 items(vm.queue, key = { "q${it.id}" }) { UploadRow(it, onRetry = { vm.retry(it) }) }
@@ -214,7 +230,10 @@ fun PolkaScreen(vm: MainViewModel) {
 
             if (vm.link is Link.Online && tab == 1) {
                 item { SleepStatus(vm) }
-                item { SectionTitle("В ${MainViewModel.SLEEP_DIR}") }
+                item {
+                    SectionTitle(stringResource(R.string.sleep_in, MainViewModel.SLEEP_DIR))
+                    Hint(stringResource(R.string.sleep_hint))
+                }
                 if (vm.sleepFiles.isEmpty()) item { EmptyShelf() }
                 items(vm.sleepFiles.chunked(3), key = { r -> "s" + r.joinToString { it.name } }) { r ->
                     SleepRow(r, vm, onTap = { opened = it })
@@ -251,21 +270,23 @@ fun PolkaScreen(vm: MainViewModel) {
     )
     opened?.let { f -> WallpaperSheet(f, vm, onDismiss = { opened = null }) }
 
+    if (vm.showHelp) HelpSheet(onDismiss = vm::closeHelp)
+
     if (askHost) TextDialog(
-        title = "Адрес читалки",
-        hint = "IP с экрана X4, например 192.168.0.194",
+        title = stringResource(R.string.host_title),
+        hint = stringResource(R.string.host_hint),
         initial = vm.host ?: "",
         keyboard = KeyboardType.Uri,
-        confirm = "Подключиться",
+        confirm = stringResource(R.string.host_connect),
         onDismiss = { askHost = false },
         onOk = { askHost = false; vm.connect(manualHost = it) },
     )
     if (askFolder) TextDialog(
-        title = "Новая папка",
-        hint = "в ${vm.browsePath}",
+        title = stringResource(R.string.folder_title),
+        hint = stringResource(R.string.folder_hint, vm.browsePath),
         initial = "",
         keyboard = KeyboardType.Text,
-        confirm = "Создать",
+        confirm = stringResource(R.string.folder_create),
         onDismiss = { askFolder = false },
         onOk = { askFolder = false; vm.mkdir(it) },
     )
@@ -273,65 +294,113 @@ fun PolkaScreen(vm: MainViewModel) {
         AlertDialog(
             onDismissRequest = { toDelete = null },
             containerColor = p.card,
-            title = { Text("Убрать с читалки?", style = MaterialTheme.typography.titleLarge, color = p.ink) },
+            title = { Text(stringResource(R.string.del_title), style = MaterialTheme.typography.titleLarge, color = p.ink) },
             text = {
                 Text(
-                    if (f.isDirectory) "Папка «${f.name}» удалится, только если она пустая." else "«${f.name}» удалится с карты X4.",
+                    if (f.isDirectory) stringResource(R.string.del_folder, f.name) else stringResource(R.string.del_file, f.name),
                     color = p.muted,
                 )
             },
             confirmButton = {
-                TextButton(onClick = { vm.delete(f); toDelete = null }) { Text("Удалить", color = p.ember) }
+                TextButton(onClick = { vm.delete(f); toDelete = null }) { Text(stringResource(R.string.del_ok), color = p.ember) }
             },
-            dismissButton = { TextButton(onClick = { toDelete = null }) { Text("Оставить", color = p.ink) } },
+            dismissButton = { TextButton(onClick = { toDelete = null }) { Text(stringResource(R.string.del_keep), color = p.ink) } },
         )
     }
 }
 
 @Composable
-private fun Header(vm: MainViewModel, onAskHost: () -> Unit) {
+private fun Header(vm: MainViewModel) {
     val p = LocalPalette.current
     Column(Modifier.padding(top = 8.dp)) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text("Полка", style = MaterialTheme.typography.displaySmall, color = p.ink)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall, color = p.ink)
             Text(".", style = MaterialTheme.typography.displaySmall, color = p.ember)
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = vm::openHelp) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.HelpOutline, stringResource(R.string.cd_help),
+                    tint = p.muted, modifier = Modifier.size(26.dp),
+                )
+            }
         }
-        AnimatedContent(
-            targetState = vm.link,
-            transitionSpec = { (fadeIn() + slideInVertically { it / 2 }) togetherWith fadeOut() },
-            label = "status",
-            contentKey = { it::class },
-        ) { link ->
-            when (link) {
-                Link.Searching -> Text("ищу твою X4 в сети…", color = p.muted, fontSize = 15.sp)
-                Link.NotFound -> Column {
-                    Text("X4 не видно", color = p.ink, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-                    Text(
-                        "На читалке: File Transfer → та же Wi-Fi, что у телефона. Тапни по читалке, чтобы поискать снова.",
-                        color = p.muted, fontSize = 13.sp, lineHeight = 18.sp,
+        // Fixed height: the status line must never push the tabs around while it animates.
+        Box(Modifier.height(24.dp), contentAlignment = Alignment.CenterStart) {
+            AnimatedContent(
+                targetState = vm.link,
+                transitionSpec = { (fadeIn() + slideInVertically { it / 2 }) togetherWith fadeOut() },
+                label = "status",
+                contentKey = { it::class },
+            ) { link ->
+                when (link) {
+                    Link.Searching -> Text(stringResource(R.string.status_searching), color = p.muted, fontSize = 15.sp)
+                    Link.NotFound -> Text(
+                        stringResource(R.string.status_not_found),
+                        color = p.ink, fontSize = 15.sp, fontWeight = FontWeight.Medium,
                     )
-                    Text(
-                        "ввести адрес вручную",
-                        color = p.ember, fontSize = 13.sp, fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(top = 6.dp).clickable(onClick = onAskHost),
-                    )
-                }
-                is Link.Online -> Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(8.dp).clip(CircleShape).background(p.moss))
-                    Spacer(Modifier.width(8.dp))
-                    val s = link.status
-                    Text(
-                        "${s.device} на связи · ${s.host}" + if (s.mode == "AP") " · хотспот" else "",
-                        color = p.ink, fontSize = 15.sp,
-                    )
-                    if (s.mode != "AP") {
+                    is Link.Online -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(8.dp).clip(CircleShape).background(p.moss))
                         Spacer(Modifier.width(8.dp))
-                        Bars(s.rssi)
+                        val s = link.status
+                        Text(
+                            stringResource(R.string.status_online, s.device, s.host) +
+                                if (s.mode == "AP") " · " + stringResource(R.string.status_hotspot) else "",
+                            color = p.ink, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        if (s.mode != "AP") {
+                            Spacer(Modifier.width(8.dp))
+                            Bars(s.rssi)
+                        }
                     }
                 }
             }
         }
     }
+}
+
+/** Shown while the reader is missing: three plain steps, so nobody has to guess what to do. */
+@Composable
+private fun ConnectGuide(onManual: () -> Unit, onHelp: () -> Unit) {
+    val p = LocalPalette.current
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(p.card)
+            .border(1.dp, p.line, RoundedCornerShape(22.dp)).padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(stringResource(R.string.guide_title), style = MaterialTheme.typography.titleMedium, color = p.ink)
+        listOf(R.string.guide_1, R.string.guide_2, R.string.guide_3).forEachIndexed { i, id ->
+            Row(verticalAlignment = Alignment.Top) {
+                Box(
+                    Modifier.size(24.dp).clip(CircleShape).background(if (i == 2) p.ember else p.line),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        "${i + 1}", color = if (i == 2) Color.White else p.ink,
+                        fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Text(rich(id), color = p.ink, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.padding(top = 2.dp))
+            }
+        }
+        Row(Modifier.padding(top = 2.dp)) {
+            Text(
+                stringResource(R.string.guide_manual), color = p.ember, fontSize = 13.sp, fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable(onClick = onManual).padding(vertical = 4.dp),
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                stringResource(R.string.guide_more), color = p.muted, fontSize = 13.sp,
+                modifier = Modifier.clickable(onClick = onHelp).padding(vertical = 4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+fun Hint(text: String) {
+    Text(text, color = LocalPalette.current.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
 }
 
 @Composable
@@ -390,10 +459,18 @@ private fun Hero(
     ) {
         Canvas(Modifier.fillMaxSize()) {
             val cx = size.width / 2
-            val cy = size.height / 2
-            val w = 150.dp.toPx()
-            val h = 220.dp.toPx()
+            val cy = size.height / 2 - 14.dp.toPx()
+            val w = 140.dp.toPx()
+            val h = 205.dp.toPx()
 
+            if (link == Link.NotFound) {
+                // a soft "tap me" glow around the sleeping reader
+                drawCircle(
+                    color = p.ember.copy(alpha = 0.10f + breathe * 0.10f),
+                    radius = h * 0.55f + breathe * 10.dp.toPx(),
+                    center = Offset(cx, cy - 10.dp.toPx()),
+                )
+            }
             if (link == Link.Searching) {
                 for (k in 0 until 3) {
                     val t = (sonar + k / 3f) % 1f
@@ -498,6 +575,34 @@ private fun Hero(
         // "+1" pops each time a book lands
         pops.forEach { id -> key(id) { Pop() } }
 
+        // Say it out loud: the drawn reader is a button.
+        val pill = when (link) {
+            Link.NotFound -> stringResource(R.string.hero_tap)
+            Link.Searching -> stringResource(R.string.hero_searching)
+            is Link.Online -> stringResource(R.string.hero_refresh)
+        }
+        val loud = link == Link.NotFound
+        Row(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 12.dp)
+                .graphicsLayer { if (loud) { scaleX = 1f + breathe * 0.04f; scaleY = scaleX } }
+                .clip(RoundedCornerShape(50))
+                .background(if (loud) p.ember else p.paper.copy(alpha = 0.85f))
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Rounded.TouchApp, null, tint = if (loud) Color.White else p.muted,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                pill, color = if (loud) Color.White else p.muted,
+                fontSize = 13.sp, fontWeight = if (loud) FontWeight.SemiBold else FontWeight.Normal,
+            )
+        }
+
         if (link == Link.NotFound) {
             Text(
                 "z z z",
@@ -506,7 +611,7 @@ private fun Hero(
                 fontSize = 18.sp,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 28.dp, end = 60.dp)
+                    .padding(top = 24.dp, end = 64.dp)
                     .graphicsLayer { translationY = -breathe * 10f; alpha = 0.4f + breathe * 0.6f },
             )
         }
@@ -602,10 +707,10 @@ private fun UploadRow(item: UploadItem, onRetry: () -> Unit) {
             Spacer(Modifier.width(10.dp))
             AnimatedContent(item.state, label = "st") { st ->
                 when (st) {
-                    UploadState.Waiting -> Text("ждёт", color = p.muted, fontSize = 12.sp)
+                    UploadState.Waiting -> Text(stringResource(R.string.state_waiting), color = p.muted, fontSize = 12.sp)
                     UploadState.Sending -> Text("${(item.progress * 100).toInt()}%", color = p.ember, fontSize = 12.sp)
                     UploadState.Done -> Icon(Icons.Rounded.Check, null, tint = p.moss, modifier = Modifier.size(20.dp))
-                    UploadState.AlreadyThere -> Text("уже на полке", color = p.muted, fontSize = 12.sp)
+                    UploadState.AlreadyThere -> Text(stringResource(R.string.state_already), color = p.muted, fontSize = 12.sp)
                     UploadState.Failed -> Icon(Icons.Rounded.ErrorOutline, null, tint = p.ember, modifier = Modifier.size(20.dp))
                 }
             }
@@ -621,11 +726,11 @@ private fun UploadRow(item: UploadItem, onRetry: () -> Unit) {
         }
         if (item.state == UploadState.Failed) {
             Text(
-                "${item.error ?: "ошибка"} · тапни, чтобы повторить",
+                stringResource(R.string.state_failed, item.error ?: stringResource(R.string.error_generic)),
                 color = p.ember, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp),
             )
         } else if (item.size > 0) {
-            Text(human(item.size), color = p.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
+            Text(humanSize(item.size), color = p.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
         }
     }
 }
@@ -643,7 +748,7 @@ private fun LibraryHeader(
     val p = LocalPalette.current
     Column(Modifier.padding(top = 16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("На читалке", style = MaterialTheme.typography.titleLarge, color = p.ink, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.lib_title), style = MaterialTheme.typography.titleLarge, color = p.ink, modifier = Modifier.weight(1f))
             if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = p.muted)
             else SmallIcon(Icons.Rounded.Refresh, onRefresh)
             SmallIcon(Icons.Rounded.CreateNewFolder, onMkdir)
@@ -654,11 +759,12 @@ private fun LibraryHeader(
             }
             Text(path, color = p.muted, fontSize = 13.sp, modifier = Modifier.weight(1f))
             if (isTarget) {
-                Chip("сюда летят книги", Icons.Rounded.PushPin, p.ember, null)
+                Chip(stringResource(R.string.lib_target), Icons.Rounded.PushPin, p.ember, null)
             } else {
-                Chip("кидать сюда", Icons.Rounded.PushPin, p.muted, onPin)
+                Chip(stringResource(R.string.lib_pin), Icons.Rounded.PushPin, p.muted, onPin)
             }
         }
+        Hint(stringResource(R.string.lib_hint))
     }
 }
 
@@ -718,7 +824,8 @@ private fun FileRow(f: RemoteFile, onOpen: () -> Unit, onLong: () -> Unit) {
                 color = p.ink, fontSize = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
             Text(
-                if (f.isDirectory) "папка" else "${f.name.substringAfterLast('.', "").uppercase()} · ${human(f.size)}",
+                if (f.isDirectory) stringResource(R.string.lib_folder)
+                else "${f.name.substringAfterLast('.', "").uppercase()} · ${humanSize(f.size)}",
                 color = p.muted, fontSize = 12.sp,
             )
         }
@@ -734,7 +841,7 @@ private fun EmptyShelf() {
     ) {
         Icon(Icons.Rounded.Inventory2, null, tint = p.line, modifier = Modifier.size(40.dp))
         Spacer(Modifier.height(8.dp))
-        Text("тут пока пусто", color = p.muted, fontFamily = Serif, fontSize = 16.sp)
+        Text(stringResource(R.string.empty), color = p.muted, fontFamily = Serif, fontSize = 16.sp)
     }
 }
 
@@ -766,13 +873,30 @@ private fun TextDialog(
         confirmButton = {
             TextButton(onClick = { if (v.isNotBlank()) onOk(v) }) { Text(confirm, color = p.ember) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена", color = p.ink) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = p.ink) } },
     )
 }
 
-private fun human(b: Long): String = when {
+@Composable
+private fun humanSize(b: Long): String = when {
     b < 0 -> ""
-    b < 1024 -> "$b Б"
-    b < 1024 * 1024 -> "${b / 1024} КБ"
-    else -> String.format("%.1f МБ", b / 1024.0 / 1024.0)
+    b < 1024 -> stringResource(R.string.size_b, b.toInt())
+    b < 1024 * 1024 -> stringResource(R.string.size_kb, (b / 1024).toInt())
+    else -> stringResource(R.string.size_mb, b / 1024.0 / 1024.0)
+}
+
+/** String resource with <b> spans kept as bold. */
+@Composable
+fun rich(@StringRes id: Int): AnnotatedString {
+    val text = LocalContext.current.resources.getText(id)
+    return remember(text) {
+        if (text !is Spanned) AnnotatedString(text.toString()) else buildAnnotatedString {
+            append(text.toString())
+            text.getSpans(0, text.length, StyleSpan::class.java).forEach {
+                if (it.style == Typeface.BOLD) {
+                    addStyle(SpanStyle(fontWeight = FontWeight.SemiBold), text.getSpanStart(it), text.getSpanEnd(it))
+                }
+            }
+        }
+    }
 }

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Полка</string>
+    <string name="share_label">На X4</string>
+
+    <string name="tab_books">Книги</string>
+    <string name="tab_sleep">Заставки</string>
+
+    <string name="status_searching">ищу твою X4 в сети…</string>
+    <string name="status_not_found">X4 не видно</string>
+    <string name="status_online">%1$s на связи · %2$s</string>
+    <string name="status_hotspot">хотспот</string>
+
+    <string name="hero_tap">Нажми на читалку, чтобы найти её</string>
+    <string name="hero_searching">ищу…</string>
+    <string name="hero_refresh">нажми, чтобы обновить</string>
+
+    <string name="guide_title">Как подключиться</string>
+    <string name="guide_1">На X4 открой <b>Передачу файлов</b> (File Transfer) и подключи её к Wi-Fi.</string>
+    <string name="guide_2">Телефон — в <b>ту же Wi-Fi</b>. Или прямо к хотспоту читалки «CrossPoint-Reader».</string>
+    <string name="guide_3"><b>Нажми на читалку выше</b> — Полка найдёт её сама.</string>
+    <string name="guide_manual">ввести адрес вручную</string>
+    <string name="guide_more">как всё устроено</string>
+
+    <string name="drop_books">Закинуть книги</string>
+    <string name="drop_books_online">летят в %1$s · или «Поделиться → На X4» из любого приложения</string>
+    <string name="drop_books_offline">можно выбрать заранее — улетят, как только X4 появится</string>
+    <string name="drop_sleep">Добавить заставки</string>
+    <string name="drop_sleep_hint">любая картинка станет 480×800 BMP в %1$s</string>
+
+    <string name="queue_title">Летят</string>
+    <string name="queue_clear">убрать готовые</string>
+    <string name="state_waiting">ждёт</string>
+    <string name="state_already">уже на полке</string>
+    <string name="state_failed">%1$s · нажми, чтобы повторить</string>
+    <string name="error_generic">ошибка</string>
+
+    <string name="lib_title">На читалке</string>
+    <string name="lib_target">сюда летят книги</string>
+    <string name="lib_pin">кидать сюда</string>
+    <string name="lib_hint">нажми на папку, чтобы открыть · долгое нажатие — удалить</string>
+    <string name="lib_folder">папка</string>
+    <string name="empty">тут пока пусто</string>
+
+    <string name="host_title">Адрес читалки</string>
+    <string name="host_hint">IP с экрана X4, например 192.168.0.194</string>
+    <string name="host_connect">Подключиться</string>
+    <string name="folder_title">Новая папка</string>
+    <string name="folder_hint">в %1$s</string>
+    <string name="folder_create">Создать</string>
+    <string name="cancel">Отмена</string>
+
+    <string name="del_title">Убрать с читалки?</string>
+    <string name="del_folder">Папка «%1$s» удалится, только если она пустая.</string>
+    <string name="del_file">«%1$s» удалится с карты X4.</string>
+    <string name="del_ok">Удалить</string>
+    <string name="del_keep">Оставить</string>
+
+    <string name="toast_nobody">По адресу %1$s никто не отвечает</string>
+    <string name="toast_target">Книги полетят в %1$s</string>
+    <string name="toast_failed">Не вышло: %1$s</string>
+    <string name="toast_deleted">%1$s — удалено</string>
+    <string name="toast_img_fail">Не получилось открыть картинку</string>
+    <string name="toast_dl_fail">Не вышло скачать %1$s</string>
+    <string name="toast_random">Теперь каждый раз случайная из /sleep</string>
+    <string name="toast_custom_on">На читалке включён режим «Своя картинка»</string>
+
+    <string name="sleep_always">Всегда: %1$s</string>
+    <string name="sleep_random">Каждый раз случайная из /sleep</string>
+    <string name="sleep_back_random">вернуть случайные</string>
+    <string name="sleep_off">Читалка пока не показывает твои картинки</string>
+    <string name="sleep_enable">включить</string>
+    <string name="sleep_in">В %1$s</string>
+    <string name="sleep_hint">нажми на картинку, чтобы закрепить или удалить</string>
+
+    <string name="ed_new">Новая заставка</string>
+    <string name="ed_count">Заставка %1$d из %2$d</string>
+    <string name="ed_failed">не открылась</string>
+    <string name="ed_gestures">щипок — масштаб · палец — двигать</string>
+    <string name="ed_fill">Заполнить</string>
+    <string name="ed_fit">Вписать</string>
+    <string name="ed_white">Поля: белые</string>
+    <string name="ed_black">Поля: чёрные</string>
+    <string name="ed_prev">‹ назад</string>
+    <string name="ed_next">дальше ›</string>
+    <string name="ed_set">Поставить на читалку</string>
+    <string name="ed_set_first">Закинуть и поставить первую</string>
+    <string name="ed_collection">просто в коллекцию (случайная при каждом сне)</string>
+
+    <string name="ws_pin">Показывать всегда эту</string>
+    <string name="ws_unpin">Открепить — снова случайные</string>
+    <string name="ws_delete">удалить с читалки</string>
+
+    <string name="help_title">Как устроена Полка</string>
+    <string name="help_connect_t">Подключение</string>
+    <string name="help_connect">На X4 открой «Передачу файлов» и подключи её к Wi-Fi, телефон — в ту же сеть. Полка находит читалку сама. Если нет — нажми на нарисованную читалку или зажми её и введи IP с экрана X4.</string>
+    <string name="help_books_t">Книги</string>
+    <string name="help_books">EPUB, FB2, TXT, PDF — что угодно. Кнопка «Закинуть книги» или «Поделиться → На X4» в Telegram, браузере, «Файлах». Книги встают в очередь и улетают, как только читалка в сети.</string>
+    <string name="help_shelf_t">Полка</string>
+    <string name="help_shelf">Под кнопкой — то, что лежит на карте. Нажми на папку, чтобы открыть, «кидать сюда» делает её целевой, долгое нажатие — удалить.</string>
+    <string name="help_sleep_t">Заставки</string>
+    <string name="help_sleep">Выбери картинки и подгони кадр пальцами. «Поставить» — одна картинка всегда, остальные из /sleep меняются случайно.</string>
+    <string name="help_fw_t">Прошивка</string>
+    <string name="help_fw">Работает с CrossPoint и inkMOD. У заводской прошивки Xteink нет API передачи файлов.</string>
+    <string name="help_language">Язык</string>
+    <string name="help_lang_system">Как в системе</string>
+    <string name="help_github">Код на GitHub</string>
+    <string name="help_support">Поддержать автора</string>
+    <string name="help_ok">Понятно</string>
+    <string name="help_version">Полка %1$s · открытый код, GPL-3.0</string>
+    <string name="cd_help">Помощь</string>
+
+    <string name="size_b">%1$d Б</string>
+    <string name="size_kb">%1$d КБ</string>
+    <string name="size_mb">%1$.1f МБ</string>
+</resources>

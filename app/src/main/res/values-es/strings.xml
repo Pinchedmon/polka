@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="share_label">Al X4</string>
+
+    <string name="tab_books">Libros</string>
+    <string name="tab_sleep">Pantallas de reposo</string>
+
+    <string name="status_searching">buscando tu X4…</string>
+    <string name="status_not_found">No se ve el X4</string>
+    <string name="status_online">%1$s conectado · %2$s</string>
+    <string name="status_hotspot">punto de acceso</string>
+
+    <string name="hero_tap">Toca el lector para encontrarlo</string>
+    <string name="hero_searching">buscando…</string>
+    <string name="hero_refresh">toca para actualizar</string>
+
+    <string name="guide_title">Cómo conectarse</string>
+    <string name="guide_1">En el X4 abre <b>File Transfer</b> y conéctalo a una Wi-Fi.</string>
+    <string name="guide_2">El móvil en la <b>misma Wi-Fi</b> — o en el punto de acceso del lector «CrossPoint-Reader».</string>
+    <string name="guide_3"><b>Toca el lector de arriba.</b> Polka lo encuentra sola.</string>
+    <string name="guide_manual">introducir la dirección a mano</string>
+    <string name="guide_more">cómo funciona todo</string>
+
+    <string name="drop_books">Enviar libros</string>
+    <string name="drop_books_online">a %1$s · o Compartir → «Al X4» desde cualquier app</string>
+    <string name="drop_books_offline">elígelos ya — volarán en cuanto aparezca el X4</string>
+    <string name="drop_sleep">Añadir pantallas de reposo</string>
+    <string name="drop_sleep_hint">cualquier imagen se convierte en BMP 480×800 en %1$s</string>
+
+    <string name="queue_title">En vuelo</string>
+    <string name="queue_clear">quitar terminados</string>
+    <string name="state_waiting">esperando</string>
+    <string name="state_already">ya está</string>
+    <string name="state_failed">%1$s · toca para reintentar</string>
+    <string name="error_generic">error</string>
+
+    <string name="lib_title">En el lector</string>
+    <string name="lib_target">los libros llegan aquí</string>
+    <string name="lib_pin">enviar aquí</string>
+    <string name="lib_hint">toca una carpeta para abrirla · mantén pulsado para borrar</string>
+    <string name="lib_folder">carpeta</string>
+    <string name="empty">aún no hay nada</string>
+
+    <string name="host_title">Dirección del lector</string>
+    <string name="host_hint">IP de la pantalla del X4, p. ej. 192.168.0.194</string>
+    <string name="host_connect">Conectar</string>
+    <string name="folder_title">Nueva carpeta</string>
+    <string name="folder_hint">en %1$s</string>
+    <string name="folder_create">Crear</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="del_title">¿Quitar del lector?</string>
+    <string name="del_folder">La carpeta «%1$s» solo se borra si está vacía.</string>
+    <string name="del_file">«%1$s» se borrará de la tarjeta del X4.</string>
+    <string name="del_ok">Borrar</string>
+    <string name="del_keep">Mantener</string>
+
+    <string name="toast_nobody">Nadie responde en %1$s</string>
+    <string name="toast_target">Los libros irán a %1$s</string>
+    <string name="toast_failed">No funcionó: %1$s</string>
+    <string name="toast_deleted">%1$s — borrado</string>
+    <string name="toast_img_fail">No se pudo abrir la imagen</string>
+    <string name="toast_dl_fail">No se pudo descargar %1$s</string>
+    <string name="toast_random">Ahora una imagen aleatoria de /sleep cada vez</string>
+    <string name="toast_custom_on">Pantalla de reposo propia activada</string>
+
+    <string name="sleep_always">Siempre: %1$s</string>
+    <string name="sleep_random">Una aleatoria de /sleep cada vez</string>
+    <string name="sleep_back_random">volver a aleatorio</string>
+    <string name="sleep_off">El lector aún no muestra tus imágenes</string>
+    <string name="sleep_enable">activar</string>
+    <string name="sleep_in">En %1$s</string>
+    <string name="sleep_hint">toca una imagen para fijarla o borrarla</string>
+
+    <string name="ed_new">Nueva pantalla de reposo</string>
+    <string name="ed_count">Pantalla %1$d de %2$d</string>
+    <string name="ed_failed">no se pudo abrir</string>
+    <string name="ed_gestures">pellizca — zoom · arrastra — mover</string>
+    <string name="ed_fill">Rellenar</string>
+    <string name="ed_fit">Ajustar</string>
+    <string name="ed_white">Márgenes: blancos</string>
+    <string name="ed_black">Márgenes: negros</string>
+    <string name="ed_prev">‹ atrás</string>
+    <string name="ed_next">siguiente ›</string>
+    <string name="ed_set">Poner en el lector</string>
+    <string name="ed_set_first">Enviar y poner la primera</string>
+    <string name="ed_collection">solo a la colección (aleatoria en cada reposo)</string>
+
+    <string name="ws_pin">Mostrar siempre esta</string>
+    <string name="ws_unpin">Desfijar — aleatorio otra vez</string>
+    <string name="ws_delete">borrar del lector</string>
+
+    <string name="help_title">Cómo funciona Polka</string>
+    <string name="help_connect_t">Conexión</string>
+    <string name="help_connect">En el X4 abre File Transfer y conéctalo a la Wi-Fi; el móvil en la misma red. Polka encuentra el lector sola; si no, toca el lector dibujado o mantenlo pulsado e introduce la IP de la pantalla del X4.</string>
+    <string name="help_books_t">Libros</string>
+    <string name="help_books">EPUB, FB2, TXT, PDF — lo que sea. Toca «Enviar libros» o usa Compartir → «Al X4» en Telegram, el navegador o Archivos. Los libros esperan en cola y vuelan en cuanto el lector está en línea.</string>
+    <string name="help_shelf_t">Estante</string>
+    <string name="help_shelf">Debajo del botón está lo que hay en la tarjeta. Toca una carpeta para abrirla, «enviar aquí» la hace destino, mantener pulsado borra.</string>
+    <string name="help_sleep_t">Pantallas de reposo</string>
+    <string name="help_sleep">Elige imágenes y encuádralas con los dedos. «Poner» muestra una siempre; el resto de /sleep rota al azar.</string>
+    <string name="help_fw_t">Firmware</string>
+    <string name="help_fw">Funciona con CrossPoint e inkMOD. El firmware original de Xteink no tiene API de File Transfer.</string>
+    <string name="help_language">Idioma</string>
+    <string name="help_lang_system">Sistema</string>
+    <string name="help_github">Código en GitHub</string>
+    <string name="help_support">Apoyar al autor</string>
+    <string name="help_ok">Entendido</string>
+    <string name="help_version">Polka %1$s · código abierto, GPL-3.0</string>
+    <string name="cd_help">Ayuda</string>
+</resources>

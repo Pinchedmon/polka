@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="share_label">Auf X4</string>
+
+    <string name="tab_books">Bücher</string>
+    <string name="tab_sleep">Sleep-Bilder</string>
+
+    <string name="status_searching">suche deinen X4…</string>
+    <string name="status_not_found">X4 nicht sichtbar</string>
+    <string name="status_online">%1$s verbunden · %2$s</string>
+    <string name="status_hotspot">Hotspot</string>
+
+    <string name="hero_tap">Tippe auf den Reader, um ihn zu finden</string>
+    <string name="hero_searching">suche…</string>
+    <string name="hero_refresh">tippen zum Aktualisieren</string>
+
+    <string name="guide_title">So verbindest du dich</string>
+    <string name="guide_1">Öffne am X4 <b>File Transfer</b> und verbinde ihn mit dem WLAN.</string>
+    <string name="guide_2">Das Handy ins <b>gleiche WLAN</b> — oder direkt in den Hotspot des Readers «CrossPoint-Reader».</string>
+    <string name="guide_3"><b>Tippe oben auf den Reader.</b> Polka findet ihn selbst.</string>
+    <string name="guide_manual">Adresse manuell eingeben</string>
+    <string name="guide_more">wie alles funktioniert</string>
+
+    <string name="drop_books">Bücher senden</string>
+    <string name="drop_books_online">nach %1$s · oder Teilen → «Auf X4» aus jeder App</string>
+    <string name="drop_books_offline">schon jetzt auswählen — sie fliegen los, sobald der X4 auftaucht</string>
+    <string name="drop_sleep">Sleep-Bilder hinzufügen</string>
+    <string name="drop_sleep_hint">jedes Bild wird zu 480×800 BMP in %1$s</string>
+
+    <string name="queue_title">Unterwegs</string>
+    <string name="queue_clear">Fertige entfernen</string>
+    <string name="state_waiting">wartet</string>
+    <string name="state_already">schon da</string>
+    <string name="state_failed">%1$s · tippen zum Wiederholen</string>
+    <string name="error_generic">Fehler</string>
+
+    <string name="lib_title">Auf dem Reader</string>
+    <string name="lib_target">Bücher landen hier</string>
+    <string name="lib_pin">hierher senden</string>
+    <string name="lib_hint">Ordner antippen zum Öffnen · lange drücken zum Löschen</string>
+    <string name="lib_folder">Ordner</string>
+    <string name="empty">noch leer</string>
+
+    <string name="host_title">Adresse des Readers</string>
+    <string name="host_hint">IP vom X4-Bildschirm, z. B. 192.168.0.194</string>
+    <string name="host_connect">Verbinden</string>
+    <string name="folder_title">Neuer Ordner</string>
+    <string name="folder_hint">in %1$s</string>
+    <string name="folder_create">Erstellen</string>
+    <string name="cancel">Abbrechen</string>
+
+    <string name="del_title">Vom Reader entfernen?</string>
+    <string name="del_folder">Der Ordner «%1$s» wird nur gelöscht, wenn er leer ist.</string>
+    <string name="del_file">«%1$s» wird von der X4-Karte gelöscht.</string>
+    <string name="del_ok">Löschen</string>
+    <string name="del_keep">Behalten</string>
+
+    <string name="toast_nobody">Unter %1$s antwortet niemand</string>
+    <string name="toast_target">Bücher gehen nach %1$s</string>
+    <string name="toast_failed">Hat nicht geklappt: %1$s</string>
+    <string name="toast_deleted">%1$s — gelöscht</string>
+    <string name="toast_img_fail">Bild konnte nicht geöffnet werden</string>
+    <string name="toast_dl_fail">%1$s konnte nicht geladen werden</string>
+    <string name="toast_random">Jetzt jedes Mal ein zufälliges Bild aus /sleep</string>
+    <string name="toast_custom_on">Eigenes Sleep-Bild ist eingeschaltet</string>
+
+    <string name="sleep_always">Immer: %1$s</string>
+    <string name="sleep_random">Jedes Mal ein zufälliges aus /sleep</string>
+    <string name="sleep_back_random">wieder zufällig</string>
+    <string name="sleep_off">Der Reader zeigt deine Bilder noch nicht</string>
+    <string name="sleep_enable">einschalten</string>
+    <string name="sleep_in">In %1$s</string>
+    <string name="sleep_hint">Bild antippen zum Anheften oder Löschen</string>
+
+    <string name="ed_new">Neues Sleep-Bild</string>
+    <string name="ed_count">Sleep-Bild %1$d von %2$d</string>
+    <string name="ed_failed">ließ sich nicht öffnen</string>
+    <string name="ed_gestures">kneifen — zoomen · ziehen — verschieben</string>
+    <string name="ed_fill">Füllen</string>
+    <string name="ed_fit">Einpassen</string>
+    <string name="ed_white">Ränder: weiß</string>
+    <string name="ed_black">Ränder: schwarz</string>
+    <string name="ed_prev">‹ zurück</string>
+    <string name="ed_next">weiter ›</string>
+    <string name="ed_set">Auf dem Reader setzen</string>
+    <string name="ed_set_first">Senden und das erste setzen</string>
+    <string name="ed_collection">nur zur Sammlung (zufällig bei jedem Schlaf)</string>
+
+    <string name="ws_pin">Immer dieses zeigen</string>
+    <string name="ws_unpin">Lösen — wieder zufällig</string>
+    <string name="ws_delete">vom Reader löschen</string>
+
+    <string name="help_title">So funktioniert Polka</string>
+    <string name="help_connect_t">Verbinden</string>
+    <string name="help_connect">Öffne am X4 File Transfer und verbinde ihn mit dem WLAN; das Handy bleibt im selben Netz. Polka findet den Reader selbst — sonst tippe auf den gezeichneten Reader oder halte ihn gedrückt und gib die IP vom X4-Bildschirm ein.</string>
+    <string name="help_books_t">Bücher</string>
+    <string name="help_books">EPUB, FB2, TXT, PDF — alles. Tippe auf «Bücher senden» oder nutze Teilen → «Auf X4» in Telegram, im Browser oder in Dateien. Bücher warten in der Schlange und fliegen los, sobald der Reader online ist.</string>
+    <string name="help_shelf_t">Regal</string>
+    <string name="help_shelf">Unter dem Button siehst du, was auf der Karte liegt. Ordner antippen öffnet ihn, «hierher senden» macht ihn zum Ziel, langes Drücken löscht.</string>
+    <string name="help_sleep_t">Sleep-Bilder</string>
+    <string name="help_sleep">Bilder auswählen und mit den Fingern zuschneiden. «Setzen» zeigt immer ein Bild; der Rest von /sleep wechselt zufällig.</string>
+    <string name="help_fw_t">Firmware</string>
+    <string name="help_fw">Funktioniert mit CrossPoint und inkMOD. Die Original-Firmware von Xteink hat keine File-Transfer-API.</string>
+    <string name="help_language">Sprache</string>
+    <string name="help_lang_system">System</string>
+    <string name="help_github">Quellcode auf GitHub</string>
+    <string name="help_support">Autor unterstützen</string>
+    <string name="help_ok">Verstanden</string>
+    <string name="help_version">Polka %1$s · Open Source, GPL-3.0</string>
+    <string name="cd_help">Hilfe</string>
+</resources>

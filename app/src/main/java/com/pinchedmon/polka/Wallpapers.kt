@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -110,15 +111,15 @@ fun SleepStatus(vm: MainViewModel) {
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                if (vm.pinned != null) "Всегда: ${vm.pinned!!.removeSuffix(".bmp")}"
-                else if (vm.hasRootSleep) "Всегда: /sleep.bmp"
-                else "Каждый раз случайная из /sleep",
+                if (vm.pinned != null) stringResource(R.string.sleep_always, vm.pinned!!.removeSuffix(".bmp"))
+                else if (vm.hasRootSleep) stringResource(R.string.sleep_always, "/sleep.bmp")
+                else stringResource(R.string.sleep_random),
                 color = p.ink, fontSize = 15.sp, modifier = Modifier.weight(1f),
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
             if (vm.hasRootSleep) {
                 Text(
-                    "вернуть случайные", color = p.ember, fontSize = 13.sp,
+                    stringResource(R.string.sleep_back_random), color = p.ember, fontSize = 13.sp,
                     modifier = Modifier.clickable(onClick = vm::unpin).padding(4.dp),
                 )
             }
@@ -128,11 +129,11 @@ fun SleepStatus(vm: MainViewModel) {
                 Icon(Icons.Rounded.Bedtime, null, tint = p.muted, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Читалка сейчас не показывает свои картинки",
+                    stringResource(R.string.sleep_off),
                     color = p.muted, fontSize = 13.sp, modifier = Modifier.weight(1f),
                 )
                 Text(
-                    "включить", color = p.ember, fontSize = 13.sp, fontWeight = FontWeight.Medium,
+                    stringResource(R.string.sleep_enable), color = p.ember, fontSize = 13.sp, fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable(onClick = vm::enableCustom).padding(4.dp),
                 )
             }
@@ -224,7 +225,7 @@ fun WallpaperEditor(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                if (uris.size == 1) "Новая заставка" else "Заставка ${index + 1} из ${uris.size}",
+                if (uris.size == 1) stringResource(R.string.ed_new) else stringResource(R.string.ed_count, index + 1, uris.size),
                 style = MaterialTheme.typography.titleLarge, color = p.ink,
             )
             Spacer(Modifier.height(14.dp))
@@ -240,28 +241,28 @@ fun WallpaperEditor(
                         Modifier.fillMaxWidth().aspectRatio(0.6f).clip(RoundedCornerShape(4.dp)).background(p.screen),
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (failed[index] == true) Text("не открылась", color = p.ember, fontSize = 13.sp)
+                        if (failed[index] == true) Text(stringResource(R.string.ed_failed), color = p.ember, fontSize = 13.sp)
                         else CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = p.muted)
                     }
                 }
             }
             Text(
-                "щипок — масштаб · палец — двигать",
+                stringResource(R.string.ed_gestures),
                 color = p.muted, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp),
             )
             Spacer(Modifier.height(12.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Tool("Заполнить") {
+                Tool(stringResource(R.string.ed_fill)) {
                     src?.let { s -> update { SleepImage.Framing.preset(s.width, s.height, it.rot, fill = true, black = it.black) } }
                 }
-                Tool("Вписать") {
+                Tool(stringResource(R.string.ed_fit)) {
                     src?.let { s -> update { SleepImage.Framing.preset(s.width, s.height, it.rot, fill = false, black = it.black) } }
                 }
             }
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Tool("↻ 90°") {
+                Tool(stringResource(R.string.ed_rotate)) {
                     src?.let { s ->
                         update {
                             val rot = (it.rot + 90) % 360
@@ -270,18 +271,18 @@ fun WallpaperEditor(
                         }
                     }
                 }
-                Tool(if (f?.black == true) "Поля: чёрные" else "Поля: белые") { update { it.copy(black = !it.black) } }
+                Tool(stringResource(if (f?.black == true) R.string.ed_black else R.string.ed_white)) { update { it.copy(black = !it.black) } }
             }
 
             if (uris.size > 1) {
                 Row(Modifier.fillMaxWidth().padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "‹ назад", color = if (index > 0) p.ink else p.line, fontSize = 14.sp,
+                        stringResource(R.string.ed_prev), color = if (index > 0) p.ink else p.line, fontSize = 14.sp,
                         modifier = Modifier.clickable(enabled = index > 0) { index-- }.padding(8.dp),
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
-                        "дальше ›", color = if (index < uris.size - 1) p.ink else p.line, fontSize = 14.sp,
+                        stringResource(R.string.ed_next), color = if (index < uris.size - 1) p.ink else p.line, fontSize = 14.sp,
                         modifier = Modifier.clickable(enabled = index < uris.size - 1) { index++ }.padding(8.dp),
                     )
                 }
@@ -295,12 +296,12 @@ fun WallpaperEditor(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    if (uris.size == 1) "Поставить на читалку" else "Закинуть и поставить первую",
+                    stringResource(if (uris.size == 1) R.string.ed_set else R.string.ed_set_first),
                     color = Color.White, fontWeight = FontWeight.SemiBold,
                 )
             }
             Text(
-                "просто в коллекцию (случайная при каждом сне)",
+                stringResource(R.string.ed_collection),
                 color = p.muted, fontSize = 13.sp, textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 12.dp).clickable { onSend(items(), false) }.padding(6.dp),
             )
@@ -388,12 +389,12 @@ fun WallpaperSheet(f: RemoteFile, vm: MainViewModel, onDismiss: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    if (isPinned) "Открепить — снова случайные" else "Показывать всегда эту",
+                    stringResource(if (isPinned) R.string.ws_unpin else R.string.ws_pin),
                     color = if (isPinned) p.ink else Color.White, fontWeight = FontWeight.SemiBold,
                 )
             }
             Text(
-                "удалить с читалки", color = p.ember, fontSize = 13.sp,
+                stringResource(R.string.ws_delete), color = p.ember, fontSize = 13.sp,
                 modifier = Modifier.padding(top = 12.dp).clickable { vm.deleteWallpaper(f.name); onDismiss() }.padding(6.dp),
             )
         }

@@ -3,6 +3,7 @@ package com.pinchedmon.polka
 import android.app.Application
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -28,6 +29,9 @@ sealed interface Link {
     data object NotFound : Link
     data class Online(val status: DeviceStatus) : Link
 }
+
+/** A snackbar message resolved in the UI, so it follows the app language. */
+class Msg(@StringRes val id: Int, vararg val args: Any)
 
 enum class UploadState { Waiting, Sending, Done, AlreadyThere, Failed }
 
@@ -81,8 +85,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val _landed = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val landed: SharedFlow<String> = _landed
 
-    private val _toast = MutableSharedFlow<String>(extraBufferCapacity = 4)
-    val toast: SharedFlow<String> = _toast
+    private val _toast = MutableSharedFlow<Msg>(extraBufferCapacity = 4)
+    val toast: SharedFlow<Msg> = _toast
 
     private val work = Channel<UploadItem>(Channel.UNLIMITED)
     private var searchJob: Job? = null
@@ -90,18 +94,41 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val host: String? get() = (link as? Link.Online)?.status?.host
 
+    /** "How it works" sheet; opens by itself on the very first launch. */
+    var showHelp by mutableStateOf(!prefs.getBoolean("onboarded", false))
+        private set
+
+    fun openHelp() { showHelp = true }
+
+    fun closeHelp() {
+        showHelp = false
+        prefs.edit().putBoolean("onboarded", true).apply()
+    }
+
+    /** Tap on the drawn reader: search when offline, just refresh lists when already connected. */
+    fun tapReader() {
+        if (link is Link.Online) {
+            refresh()
+            refreshSleep()
+        } else {
+            connect()
+        }
+    }
+
     init {
         connect()
         viewModelScope.launch { for (item in work) runUpload(item) }
         // Heartbeat: notice when the reader leaves File Transfer mode or comes back.
+        // Two missed beats in a row before giving up — one dropped packet on Wi-Fi is normal.
         viewModelScope.launch {
+            var missed = 0
             while (isActive) {
                 delay(8000)
                 val h = host
                 if (h != null && queue.none { it.state == UploadState.Sending }) {
                     runCatching { api.status(h, fast = true) }
-                        .onSuccess { link = Link.Online(it) }
-                        .onFailure { link = Link.NotFound }
+                        .onSuccess { missed = 0; link = Link.Online(it) }
+                        .onFailure { if (++missed >= 2) { missed = 0; link = Link.NotFound } }
                 } else if (link == Link.NotFound) {
                     connect(quiet = true)
                 }
@@ -127,7 +154,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 kick()
             } else {
                 link = Link.NotFound
-                if (manualHost != null) _toast.tryEmit("По адресу $manualHost никого")
+                if (manualHost != null) _toast.tryEmit(Msg(R.string.toast_nobody, manualHost))
             }
         }
     }
@@ -161,14 +188,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun dropHere() {
         folder = browsePath
         prefs.edit().putString("folder", folder).apply()
-        _toast.tryEmit("Книги полетят в $folder")
+        _toast.tryEmit(Msg(R.string.toast_target, folder))
     }
 
     fun mkdir(name: String) {
         val h = host ?: return
         viewModelScope.launch {
             runCatching { api.mkdir(h, browsePath, name.trim()) }
-                .onFailure { _toast.tryEmit(it.message ?: "Не вышло") }
+                .onFailure { _toast.tryEmit(Msg(R.string.toast_failed, it.message.orEmpty())) }
             refresh()
         }
     }
@@ -177,8 +204,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val h = host ?: return
         viewModelScope.launch {
             runCatching { api.delete(h, join(browsePath, f.name)) }
-                .onSuccess { _toast.tryEmit("${f.name} — удалено") }
-                .onFailure { _toast.tryEmit(it.message ?: "Не вышло удалить") }
+                .onSuccess { _toast.tryEmit(Msg(R.string.toast_deleted, f.name)) }
+                .onFailure { _toast.tryEmit(Msg(R.string.toast_failed, it.message.orEmpty())) }
             refresh()
         }
     }
@@ -245,7 +272,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         File.createTempFile("sleep", ".bmp", app.cacheDir).apply { writeBytes(bmp) }
                     }
                 }.getOrElse {
-                    _toast.tryEmit("Не получилось открыть картинку")
+                    _toast.tryEmit(Msg(R.string.toast_img_fail))
                     return@forEachIndexed
                 }
                 val base = sanitize(displayName(uri).substringBeforeLast('.')).take(40)
@@ -272,7 +299,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 val file = File.createTempFile("sleep", ".bmp", app.cacheDir).apply { writeBytes(bytes) }
                 enqueue(UploadItem(nextId++, Uri.fromFile(file), "sleep.bmp", file.length(), dir = "/", replace = true))
                 savePinned(name)
-            }.onFailure { _toast.tryEmit("Не вышло скачать $name") }
+            }.onFailure { _toast.tryEmit(Msg(R.string.toast_dl_fail, name)) }
         }
     }
 
@@ -283,7 +310,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             runCatching { api.delete(h, "/sleep.bmp") }
             savePinned(null)
             hasRootSleep = false
-            _toast.tryEmit("Теперь каждый раз случайная из /sleep")
+            _toast.tryEmit(Msg(R.string.toast_random))
         }
     }
 
@@ -291,7 +318,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val h = host ?: return
         viewModelScope.launch {
             runCatching { api.delete(h, "$SLEEP_DIR/$name") }
-                .onFailure { _toast.tryEmit(it.message ?: "Не вышло удалить") }
+                .onFailure { _toast.tryEmit(Msg(R.string.toast_failed, it.message.orEmpty())) }
             if (name == pinned) unpin()
             refreshSleep()
         }
@@ -301,8 +328,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val h = host ?: return
         viewModelScope.launch {
             runCatching { api.setSetting(h, "sleepScreen", SLEEP_CUSTOM) }
-                .onSuccess { sleepMode = SLEEP_CUSTOM; _toast.tryEmit("На читалке включён режим «Своя картинка»") }
-                .onFailure { _toast.tryEmit("Не вышло: ${it.message}") }
+                .onSuccess { sleepMode = SLEEP_CUSTOM; _toast.tryEmit(Msg(R.string.toast_custom_on)) }
+                .onFailure { _toast.tryEmit(Msg(R.string.toast_failed, it.message.orEmpty())) }
         }
     }
 
@@ -361,7 +388,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             api.upload(
                 host = h, dir = dir, fileName = item.name, size = size,
                 open = { spool?.inputStream() ?: app.contentResolver.openInputStream(item.uri)!! },
-                onProgress = { item.progress = it },
+                // Only touch Compose state on whole-percent changes — this runs per 16 KB chunk.
+                onProgress = { if ((it * 100).toInt() != (item.progress * 100).toInt()) item.progress = it },
             )
             spool?.delete()
             item.progress = 1f
@@ -374,6 +402,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         } catch (e: X4Api.AlreadyThereException) {
             item.state = UploadState.AlreadyThere
         } catch (e: Exception) {
+            foldersReady.clear() // the folder may have been deleted on the reader meanwhile
             item.state = UploadState.Failed
             item.error = e.message ?: e.javaClass.simpleName
             runCatching { api.status(h, fast = true) }.onFailure { link = Link.NotFound }
