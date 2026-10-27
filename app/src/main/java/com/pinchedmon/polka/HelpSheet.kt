@@ -1,7 +1,7 @@
 package com.pinchedmon.polka
 
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatDelegate
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,7 +48,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.LocaleListCompat
 
 const val GITHUB_URL = "https://github.com/Pinchedmon/polka"
 const val DONATE_URL = "https://new.donatepay.ru/donate/1536180"
@@ -141,11 +140,12 @@ private fun Section(icon: ImageVector, @StringRes title: Int, @StringRes body: I
     }
 }
 
-/** In-app language switch; AppCompat recreates the activity and remembers the choice. */
+/** In-app language switch; see [Lang] for how the choice is applied and remembered. */
 @Composable
 private fun LanguagePicker() {
     val p = LocalPalette.current
-    val current = AppCompatDelegate.getApplicationLocales().toLanguageTags().substringBefore('-')
+    val ctx = LocalContext.current
+    val current = remember { Lang.current(ctx) }
     val options = listOf("" to stringResource(R.string.help_lang_system)) + LANGUAGES
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { (tag, label) ->
@@ -155,12 +155,7 @@ private fun LanguagePicker() {
                     .clip(RoundedCornerShape(50))
                     .background(if (on) p.ink else p.card)
                     .border(1.dp, if (on) p.ink else p.line, RoundedCornerShape(50))
-                    .clickable {
-                        AppCompatDelegate.setApplicationLocales(
-                            if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList()
-                            else LocaleListCompat.forLanguageTags(tag)
-                        )
-                    }
+                    .clickable { (ctx as? Activity)?.let { Lang.set(it, tag) } }
                     .padding(horizontal = 14.dp, vertical = 8.dp),
             ) { Text(label, color = if (on) p.paper else p.ink, fontSize = 13.sp) }
         }
