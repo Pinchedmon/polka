@@ -7,8 +7,8 @@
 <meta name="description" content="Полка — отправляйте книги и файлы на Xteink по Wi-Fi прямо из браузера. Для прошивки CrossPoint.">
 <title>Полка — файлы на Xteink по Wi-Fi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23272420' d='M7 6h7v25H7zm10 0h7v25h-7zm10 3 6-2 7 23-6 2zM4 34h34v3H4z'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="./web.css?v=20261117-2">
-<script type="module" src="./app.mjs?v=20261117-2"></script>
+<link rel="stylesheet" href="./web.css?v=20261117-3">
+<script type="module" src="./app.mjs?v=20261117-3"></script>
 </head>
 <body>
 <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -71,6 +71,29 @@
     </section>
   </div>
   </div></div>
+  <section class="wallpaper" aria-labelledby="wp-title">
+    <div class="wallpaper-heading"><div><h2 id="wp-title">Заставка с вашим настроением</h2><p>Любимая картинка — на экране отдыха читалки.</p></div><label class="image-picker" for="wp-file">Выбрать картинку<input id="wp-file" type="file" accept="image/*"></label></div>
+    <div class="wallpaper-layout">
+      <div class="wallpaper-preview"><div class="preview-device"><canvas id="wp-canvas" width="480" height="800" tabindex="0" aria-label="Предпросмотр заставки. Перетащите картинку для кадрирования. Используйте стрелки клавиатуры для перемещения."></canvas><div class="preview-buttons" aria-hidden="true"><i></i><i></i></div></div><span id="wp-preview-caption">480 × 800 · предпросмотр e-ink</span><p>Двигайте картинку пальцем или мышью.<br>Щипок и колёсико меняют масштаб.</p></div>
+      <div class="wallpaper-tools">
+        <p id="wp-source" class="wp-source">Выберите фото или иллюстрацию. Картинка обрабатывается в вашем браузере.</p>
+        <fieldset id="wp-tools" disabled>
+          <legend>Кадрирование</legend>
+          <div class="wp-tool-row"><button id="wp-fill" class="secondary" type="button" aria-pressed="true">Заполнить</button><button id="wp-fit" class="secondary" type="button" aria-pressed="false">Вписать</button><button id="wp-rotate" class="secondary" type="button" aria-label="Повернуть на 90 градусов">↻ 90°</button></div>
+          <label for="wp-zoom">Масштаб <output id="wp-zoom-value">100%</output></label><input id="wp-zoom" type="range" min="30" max="1200" value="100">
+          <div class="wp-tool-row wp-background"><span>Цвет полей</span><label><input type="radio" name="wp-background" value="white" checked>Белые</label><label><input type="radio" name="wp-background" value="black">Чёрные</label></div>
+          <div class="wp-size-heading"><span>Размер экрана</span><button id="wp-default-size" type="button" class="text-button">X4 · 480 × 800</button></div>
+          <div class="wp-size"><label>Ширина, px<input id="wp-width" type="number" min="64" max="2048" step="1" value="480"></label><span aria-hidden="true">×</span><label>Высота, px<input id="wp-height" type="number" min="64" max="2048" step="1" value="800"></label></div>
+          <p class="hint">Для X4 оставьте 480 × 800. Другой размер задавайте под разрешение вашего экрана.</p>
+          <button id="wp-reset" class="text-button" type="button">Сбросить кадрирование</button>
+        </fieldset>
+        <label class="wp-pin"><input id="wp-pin" type="checkbox" checked>Показывать эту заставку каждый раз</label>
+        <p class="hint">Сохраним BMP в /sleep. Если отмечено — также заменим /sleep.bmp и включим режим «Своя картинка». Без отметки добавим в коллекцию, сохранив текущую закреплённую заставку.</p>
+        <div class="wp-actions"><button id="wp-send" type="button" disabled>На читалку</button><button id="wp-download" type="button" class="secondary" disabled>Скачать BMP</button><button id="wp-stop" type="button" class="secondary" hidden>Остановить</button></div>
+        <p id="wp-status" role="status" class="hint">Можно создать и скачать заставку без подключения.</p>
+      </div>
+    </div>
+  </section>
   <details class="help" id="help"><summary>Как подключиться?</summary><ol><li>На Xteink с CrossPoint откройте <b>File Transfer</b>. Оставьте этот экран открытым до конца передачи.</li><li>Подключите оба устройства к одной Wi-Fi сети. Если используете точку доступа читалки, сначала откройте Полку, затем подключитесь к сети CrossPoint-Reader.</li><li>Введите IP-адрес или ссылку с экрана читалки. Для точки доступа обычно используется <button id="hotspot" class="text-button">192.168.4.1</button>.</li><li>В Chrome разрешите сайту доступ к локальной сети. Нужна прошивка с поддержкой CORS; в старых версиях или других браузерах подключение может блокироваться.</li><li>Выберите папку, добавьте файлы и нажмите «Отправить». Файлы с совпадающими именами не заменяются.</li></ol><p>Если соединение блокируется, <a id="device-link" href="http://crosspoint.local/files" target="_blank" rel="noopener noreferrer">откройте встроенный интерфейс читалки</a> или используйте <a href="./android.html">приложение для Android</a>. Заводская прошивка Xteink не поддерживается.</p></details>
 </main>
 <footer><span class="footer-brand">Полка <span>Сделано для любви к чтению.</span></span><span>Ваши файлы остаются в вашей сети.</span><a href="https://new.donatepay.ru/donate/1536180">Поддержать Полку</a></footer>

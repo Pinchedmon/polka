@@ -46,7 +46,7 @@ export async function listFiles(origin, path) {
   }
   return data.sort((a, b) => Number(b.isDirectory) - Number(a.isDirectory) || a.name.localeCompare(b.name, 'ru'));
 }
-export function upload(origin, path, file, signal, onProgress) {
+export function upload(origin, path, file, signal, onProgress, {overwrite = false} = {}) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const abort = () => xhr.abort();
@@ -54,7 +54,7 @@ export function upload(origin, path, file, signal, onProgress) {
       signal.removeEventListener('abort', abort);
       error ? reject(error) : resolve();
     };
-    xhr.open('POST', endpoint(origin, '/upload', {path}));
+    xhr.open('POST', endpoint(origin, '/upload', overwrite ? {path, overwrite: '1'} : {path}));
     xhr.timeout = 300000;
     xhr.upload.onprogress = event => { if (event.lengthComputable) onProgress(event.loaded / event.total); };
     xhr.onload = () => finish(xhr.status >= 200 && xhr.status < 300 ? null : new Error(`HTTP ${xhr.status}: ${xhr.responseText.slice(0, 250)}`));

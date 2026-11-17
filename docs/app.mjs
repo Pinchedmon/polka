@@ -1,4 +1,6 @@
-import {deviceOrigin, childPath, parentPath, formatSize, request, listFiles, upload} from './client.mjs';
+import {initWallpaperEditor} from './wallpaper.mjs?v=20261117-3';
+import {deviceOrigin, childPath, parentPath, formatSize, request, listFiles, upload} from './client.mjs?v=20261117-3';
+let wallpaperEditor;
 const $ = id => document.getElementById(id);
 let origin = null, path = '/', remote = [], queue = [], busy = false, transferring = false, connecting = false, controller;
 try { $('address').value = localStorage.getItem('polka-address') || 'crosspoint.local'; } catch { /* Storage may be disabled. */ }
@@ -25,6 +27,7 @@ function controls() {
   $('destination').textContent = path;
   renderBreadcrumbs();
   syncVisuals();
+  wallpaperEditor?.sync();
 }
 function make(tag, className, text) {
   const node = document.createElement(tag); if (className) node.className = className;
@@ -233,5 +236,6 @@ $('folder-form').onsubmit = async event => {
   } catch (error) { $('folder-error').textContent = error.message; if (!$('folder-dialog').open) notice(error.message); }
   finally { setBusy(false); $('folder-create').disabled = false; $('folder-cancel').disabled = false; }
 };
-window.addEventListener('beforeunload', event => { if (transferring) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (transferring || wallpaperEditor?.isSending()) { event.preventDefault(); event.returnValue = ''; } });
+wallpaperEditor = initWallpaperEditor({getOrigin: () => origin, isBusy: () => busy, setBusy, onSaved: async () => { if (origin && !busy) await openFolder(path); }});
 link(); controls(); renderRemote();

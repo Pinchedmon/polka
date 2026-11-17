@@ -224,3 +224,52 @@ dialog input { width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Wallpaper editor: preview and exported pixels share the same canvas. */
+.wallpaper { margin-top: 28px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.wallpaper-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+.wallpaper-heading h2 { font-size: 20px; font-weight: 500; }
+.wallpaper-heading p { color: var(--muted); margin: 6px 0 0; font-size: 13px; }
+.image-picker { position: relative; display: inline-flex; align-items: center; padding: 10px 16px; background: var(--soft); border: 1px solid var(--line); border-radius: 6px; font-size: 13px; margin: 0; overflow: hidden; cursor: pointer; }
+.image-picker input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.image-picker:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.wallpaper-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 1fr); gap: 40px; align-items: start; }
+.wallpaper-preview { min-height: 520px; padding: 28px 16px; background: var(--soft); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.preview-device { padding: 12px 12px 0; background: #353b35; border-radius: 15px; max-width: 100%; }
+#wp-canvas { display: block; width: 100%; height: auto; border-radius: 4px; touch-action: none; cursor: grab; }
+#wp-canvas:active { cursor: grabbing; }
+#wp-canvas[aria-disabled="true"] { cursor: default; }
+.preview-buttons { display: flex; justify-content: center; gap: 30px; padding: 13px 0; }
+.preview-buttons i { display: block; width: 20px; height: 4px; border-radius: 2px; background: #92998a; }
+#wp-preview-caption { font-size: 12px; color: var(--muted); margin-top: 18px; font-variant-numeric: tabular-nums; }
+.wallpaper-preview p { text-align: center; font-size: 12px; color: var(--muted); }
+.wp-source { font-size: 13px; overflow-wrap: anywhere; color: var(--muted); margin: 0 0 20px; }
+.wallpaper-tools fieldset { padding: 0; border: 0; margin: 0; min-width: 0; }
+.wallpaper-tools legend { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+.wallpaper-tools fieldset:disabled { opacity: .5; }
+.wp-tool-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.wp-tool-row button { font-size: 13px; padding: 10px 14px; }
+.wp-tool-row button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.wallpaper-tools label { font-size: 13px; }
+.wallpaper-tools output { float: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+#wp-zoom { width: 100%; accent-color: var(--accent); padding: 0; margin: 8px 0 24px; min-height: 24px; }
+.wp-background { gap: 16px; }
+.wp-background > span { font-size: 13px; margin-right: auto; }
+.wp-background label, .wp-pin { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; }
+.wp-background input, .wp-pin input { accent-color: var(--accent); width: 17px; height: 17px; margin: 0; flex-shrink: 0; }
+.wp-size-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+.wp-size { display: grid; grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr); align-items: center; gap: 10px; }
+.wp-size input { display: block; width: 100%; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.wp-size > span { text-align: center; padding-top: 18px; color: var(--muted); }
+.wp-pin { margin-top: 20px; }
+.wp-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.wp-actions button { font-size: 13px; }
+#wp-status { min-height: 40px; overflow-wrap: anywhere; }
+@media (max-width: 740px) {
+  .wallpaper { padding: 20px; }
+  .wallpaper-heading { align-items: start; flex-direction: column; gap: 16px; }
+  .wallpaper-layout { grid-template-columns: 1fr; gap: 24px; }
+  .wallpaper-preview { min-height: 0; padding: 24px 16px; }
+  .wp-size input { font-size: 16px; }
+  .wp-actions button { flex: 1; }
+}

@@ -79,3 +79,13 @@ test('upload aborts active transfers and never starts with an aborted signal', a
   assert.equal(FakeXHR.last.body, undefined);
   await assert.rejects(p2, {name:'AbortError'});
 });
+
+test('replacing a pinned wallpaper explicitly opts in to overwrite', async t => {
+  globalThis.XMLHttpRequest = FakeXHR;
+  t.after(() => { delete globalThis.XMLHttpRequest; });
+  const p = upload('http://crosspoint.local', '/', file, new AbortController().signal, () => {}, {overwrite: true});
+  const url = new URL(FakeXHR.last.url);
+  assert.equal(url.searchParams.get('overwrite'), '1');
+  assert.equal(url.searchParams.get('path'), '/');
+  FakeXHR.last.respond(200); await p;
+});
