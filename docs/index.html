@@ -3,48 +3,77 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f4f3f0">
+<meta name="theme-color" content="#f5f4f0">
 <meta name="description" content="Полка — отправляйте книги и файлы на Xteink по Wi-Fi прямо из браузера. Для прошивки CrossPoint.">
 <title>Полка — файлы на Xteink по Wi-Fi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23272420' d='M7 6h7v25H7zm10 0h7v25h-7zm10 3 6-2 7 23-6 2zM4 34h34v3H4z'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="./web.css">
-<script type="module" src="./app.mjs"></script>
+<link rel="stylesheet" href="./web.css?v=20261117-2">
+<script type="module" src="./app.mjs?v=20261117-2"></script>
 </head>
 <body>
+<svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="icon-book" viewBox="0 0 24 24"><path d="M5 4h12a2 2 0 0 1 2 2v15H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Z"/><path d="M3 17h16M7 4v13m3-8h5m-5 3h4"/></symbol>
+<symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9H3V7Z"/></symbol>
+<symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+</defs></svg>
 <div class="shell">
 <header>
   <a class="brand" href="./" aria-label="Полка — главная"><svg width="30" height="30" viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M7 6h7v25H7zm10 0h7v25h-7zm10 3 6-2 7 23-6 2zM4 34h34v3H4z"/></svg>Полка</a>
-  <nav aria-label="О проекте"><a href="./android.html">Для Android</a><a href="https://github.com/Pinchedmon/polka">GitHub</a></nav>
+  <nav aria-label="О проекте"><a href="#help">Как это работает</a><a href="./android.html">Android</a><a href="https://github.com/Pinchedmon/polka">GitHub</a></nav>
 </header>
 <main>
-  <div class="title"><h1>Файлы на читалку</h1><p>С компьютера или телефона на Xteink. По Wi-Fi.</p></div>
-  <section class="connection" aria-labelledby="connection-title">
-    <div><h2 id="connection-title">Подключение</h2><p id="device-status" role="status">Откройте File Transfer на читалке и подключитесь к той же Wi-Fi сети.</p></div>
+  <div class="title"><div><h1>Книги на вашу читалку</h1><p>Меньше проводов. Больше «ещё одну главу».</p></div><span class="local-note"><span class="status-dot"></span>Напрямую по Wi-Fi</span></div>
+  <div class="desk">
+  <section class="connection" data-state="offline" aria-labelledby="connection-title">
+    <div class="connection-heading"><h2 id="connection-title">Ваша читалка</h2><span id="connection-label" class="connection-label">Не подключена</span></div>
+    <div class="reader-art" aria-hidden="true">
+      <svg class="reader-drawing" viewBox="0 0 260 240" fill="none">
+        <g class="reader-body">
+          <rect x="66" y="14" width="128" height="204" rx="17" fill="#353b35"/>
+          <rect x="71" y="19" width="118" height="194" rx="13" stroke="#697166"/>
+          <rect x="77" y="28" width="106" height="163" rx="5" fill="#e8e9dc"/>
+          <g class="reader-sleep" stroke="#57604e" stroke-width="2.5" stroke-linecap="round"><path d="M105 95q8 10 16 0m18 0q8 10 16 0"/><path d="M121 119q9 6 18 0" stroke-width="1.5"/></g>
+          <g class="reader-page" fill="#67715d"><path d="M92 53h58v4H92zm0 16h76v2H92zm0 8h76v2H92zm0 8h65v2H92zm0 18h76v2H92zm0 8h76v2H92zm0 8h53v2H92zm0 18h76v2H92zm0 8h66v2H92z"/><path d="M156 28h13v27l-6.5-5-6.5 5V28Z" fill="#a4b889"/></g>
+          <rect x="103" y="201" width="18" height="4" rx="2" fill="#92998a"/><rect x="139" y="201" width="18" height="4" rx="2" fill="#92998a"/>
+          <g class="reader-transfer"><rect x="100" y="78" width="60" height="72" rx="4" fill="#f6f6ed" stroke="#9baa8e"/><path d="M113 95h34m-34 8h34m-34 8h23" stroke="#839274" stroke-width="2"/><path d="m123 129 7 7 12-15" stroke="#506c47" stroke-width="2.5"/></g>
+        </g>
+        <g class="reader-signal" stroke="#617b56" stroke-width="2.5" stroke-linecap="round"><path d="M208 55q7 7 0 14"/><path d="M216 47q15 15 0 30"/><path d="M224 39q23 23 0 46"/></g>
+      </svg>
+      <span id="reader-caption">Для хороших историй</span>
+    </div>
+    <p id="device-status" role="status">Откройте File Transfer на Xteink и подключитесь к той же Wi-Fi сети.</p>
     <form id="connect-form">
       <label for="address">Адрес с экрана читалки</label>
-      <div class="input-row"><input id="address" name="address" type="text" placeholder="192.168.1.100" value="crosspoint.local" autocomplete="off" autocapitalize="none" spellcheck="false" required><button id="connect" type="submit">Подключить</button></div>
+      <div class="input-row"><input id="address" name="address" type="text" placeholder="192.168.1.100" value="crosspoint.local" autocomplete="off" autocapitalize="none" spellcheck="false" required><button id="connect" type="submit">Подключить читалку <span aria-hidden="true">↗</span></button></div>
     </form>
+    <a class="connection-help" href="#help">Первое подключение? Поможем.</a>
   </section>
+  <div class="work-area">
   <p id="notice" class="notice" role="status" hidden></p>
   <div class="workspace">
     <section class="transfer" aria-labelledby="transfer-title">
       <div class="section-title"><h2 id="transfer-title">Отправить файлы</h2><span id="queue-count" class="muted">Очередь пуста</span></div>
-      <label class="drop" id="drop" for="files"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 22V5m-6 6 6-6 6 6M5 21v6h22v-6"/></svg><strong>Выберите или перетащите файлы</strong><span>Книги, шрифты, заставки — любые файлы</span><input id="files" type="file" multiple></label>
-      <p class="hint">Передача не конвертирует файлы. Форматы для чтения зависят от прошивки.</p>
+      <label class="drop" id="drop" for="files"><img class="book-art" src="./assets/books.svg" width="300" height="174" alt="" draggable="false"><strong>Что будем читать?</strong><span>Перетащите файлы сюда или</span><span class="choose-files">Выберите файлы <span aria-hidden="true">＋</span></span><input id="files" type="file" multiple aria-label="Выбрать файлы для отправки"></label>
+      <p class="hint format-hint">EPUB, FB2, TXT и другие файлы · без конвертации</p>
       <ul id="queue" class="queue" aria-label="Очередь передачи"></ul>
+      <div id="overall" class="overall" hidden><div><span id="overall-label">Передаём книги</span><span id="overall-value">0%</span></div><div class="overall-track" role="progressbar" aria-label="Общий прогресс передачи" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="overall-progress"><span id="overall-fill"></span></div></div>
       <div class="send-bar"><div><span class="muted">Папка назначения</span><strong id="destination">/</strong></div><button id="send" disabled>Отправить</button><button id="cancel" class="secondary" hidden>Остановить</button></div>
-      <p id="transfer-status" class="hint" role="status">Можно выбрать файлы до подключения.</p>
+      <p id="transfer-status" class="hint transfer-hint" role="status">Файлы можно выбрать заранее.</p>
+      <button id="clear-done" class="text-button clear-done" hidden>Убрать отправленные из очереди</button>
     </section>
     <section class="shelf" aria-labelledby="shelf-title">
       <div class="section-title"><h2 id="shelf-title">На читалке</h2><button id="refresh" class="text-button" disabled>Обновить</button></div>
-      <div class="folder-toolbar"><button id="up" class="secondary" aria-label="В родительскую папку" disabled>↑</button><span id="folder-path">/</span><button id="new-folder" class="text-button" disabled>Новая папка</button></div>
+      <div class="folder-toolbar"><button id="up" class="secondary" aria-label="В родительскую папку" disabled>↑</button><nav id="folder-path" aria-label="Путь папки">/</nav><button id="new-folder" class="text-button" disabled>Новая папка</button></div>
+      <label class="search-box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="file-search" type="search" placeholder="Найти в папке" aria-label="Поиск в текущей папке" disabled></label>
+      <div id="shelf-illustration" class="shelf-illustration" aria-hidden="true"><svg width="120" height="108" viewBox="0 0 120 108" fill="none"><path d="M14 89h92" stroke="#8e9787" stroke-width="3" stroke-linecap="round"/><rect x="24" y="26" width="17" height="60" rx="2" fill="#c7cfc0"/><path d="M29 33h7m-7 44h7" stroke="#819376"/><rect x="44" y="17" width="20" height="69" rx="2" fill="#65765d"/><path d="M49 26h10m-10 4h10m-10 47h10" stroke="#c4d1bb"/><g transform="rotate(-13 86 86)"><rect x="74" y="30" width="18" height="56" rx="2" fill="#d7ccb9"/><path d="M79 39h8m-8 38h8" stroke="#9e9077"/></g></svg></div>
       <p id="folder-status" class="empty" role="status">Подключите Xteink, чтобы выбрать папку и увидеть файлы на карте памяти.</p>
       <ul id="remote-files" class="remote-files" aria-label="Файлы на читалке"></ul>
     </section>
   </div>
-  <details class="help"><summary>Как подключиться?</summary><ol><li>На Xteink с CrossPoint откройте <b>File Transfer</b>. Оставьте этот экран открытым до конца передачи.</li><li>Подключите оба устройства к одной Wi-Fi сети. Если используете точку доступа читалки, сначала откройте Полку, затем подключитесь к сети CrossPoint-Reader.</li><li>Введите IP-адрес или ссылку с экрана читалки. Для точки доступа обычно используется <button id="hotspot" class="text-button">192.168.4.1</button>.</li><li>В Chrome разрешите сайту доступ к локальной сети. Нужна прошивка с поддержкой CORS; в старых версиях или других браузерах подключение может блокироваться.</li><li>Выберите папку, добавьте файлы и нажмите «Отправить». Файлы с совпадающими именами не заменяются.</li></ol><p>Если соединение блокируется, <a id="device-link" href="http://crosspoint.local/files" target="_blank" rel="noopener noreferrer">откройте встроенный интерфейс читалки</a> или используйте <a href="./android.html">приложение для Android</a>. Заводская прошивка Xteink не поддерживается.</p></details>
+  </div></div>
+  <details class="help" id="help"><summary>Как подключиться?</summary><ol><li>На Xteink с CrossPoint откройте <b>File Transfer</b>. Оставьте этот экран открытым до конца передачи.</li><li>Подключите оба устройства к одной Wi-Fi сети. Если используете точку доступа читалки, сначала откройте Полку, затем подключитесь к сети CrossPoint-Reader.</li><li>Введите IP-адрес или ссылку с экрана читалки. Для точки доступа обычно используется <button id="hotspot" class="text-button">192.168.4.1</button>.</li><li>В Chrome разрешите сайту доступ к локальной сети. Нужна прошивка с поддержкой CORS; в старых версиях или других браузерах подключение может блокироваться.</li><li>Выберите папку, добавьте файлы и нажмите «Отправить». Файлы с совпадающими именами не заменяются.</li></ol><p>Если соединение блокируется, <a id="device-link" href="http://crosspoint.local/files" target="_blank" rel="noopener noreferrer">откройте встроенный интерфейс читалки</a> или используйте <a href="./android.html">приложение для Android</a>. Заводская прошивка Xteink не поддерживается.</p></details>
 </main>
-<footer><span>Файлы идут напрямую на читалку, без облачного хранилища.</span><a href="https://new.donatepay.ru/donate/1536180">Поддержать Полку</a></footer>
+<footer><span class="footer-brand">Полка <span>Сделано для любви к чтению.</span></span><span>Ваши файлы остаются в вашей сети.</span><a href="https://new.donatepay.ru/donate/1536180">Поддержать Полку</a></footer>
 </div>
 <dialog id="folder-dialog"><form id="folder-form"><h2>Новая папка</h2><label for="folder-name">Название</label><input id="folder-name" maxlength="100" required autocomplete="off"><p id="folder-error" role="alert"></p><div class="dialog-actions"><button type="button" id="folder-cancel" class="secondary">Отмена</button><button type="submit" id="folder-create">Создать</button></div></form></dialog>
 <noscript><p>Для подключения и передачи файлов включите JavaScript.</p></noscript>
