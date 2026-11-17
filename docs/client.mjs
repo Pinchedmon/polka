@@ -35,7 +35,10 @@ export async function request(origin, route, {params, ...options} = {}) {
       mode: 'cors', credentials: 'omit', cache: 'no-store',
       targetAddressSpace: 'local', signal: AbortSignal.timeout(15000), ...options,
     });
-  } catch { throw new Error(connectionHelp); }
+  } catch {
+    if (options.signal?.aborted) throw options.signal.reason;
+    throw new Error(connectionHelp);
+  }
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${(await response.text()).slice(0, 250)}`);
   return response;
 }

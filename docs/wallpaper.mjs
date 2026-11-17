@@ -1,4 +1,5 @@
-import {request, listFiles, upload} from './client.mjs?v=20261117-3';
+import {verifyWallpaper, pinWallpaper, enableCustomWallpaper, clearWallpaperCache} from './wallpaper-install.mjs?v=20261117-4';
+import {request, listFiles, upload} from './client.mjs?v=20261117-4';
 import {dimensions, framing, grayscale, encodeBmp} from './wallpaper-image.mjs';
 
 export function initWallpaperEditor({getOrigin, isBusy, setBusy, onSaved}) {
@@ -150,14 +151,21 @@ export function initWallpaperEditor({getOrigin, isBusy, setBusy, onSaved}) {
       let name = file.name, n = 2;
       while (taken.has(name.toLowerCase())) name = `${baseName()}-${n++}.bmp`;
       const gallery = new File([file], name, {type: 'image/bmp'});
-      await upload(origin, directory, gallery, controller.signal, value => status(`Сохраняем в ${directory}: ${Math.floor(value * 100)}%`)); saved = true; check();
+      await upload(origin, directory, gallery, controller.signal, value => status(`Сохраняем в ${directory}: ${Math.floor(value * 100)}%`)); check();
+      status('Проверяем сохранённую картинку…');
+      await verifyWallpaper(origin, `${directory}/${name}`, gallery, controller.signal); saved = true; check();
       if (pin) {
-        await upload(origin, '/', new File([file], 'sleep.bmp', {type: 'image/bmp'}), controller.signal, value => status(`Устанавливаем заставку: ${Math.floor(value * 100)}%`), {overwrite: true}); pinned = true; check();
+        await pinWallpaper(origin, new File([file], 'sleep.bmp', {type: 'image/bmp'}), controller.signal, value => status(`Устанавливаем заставку: ${Math.floor(value * 100)}%`)); pinned = true; check();
       }
-      try {
-        await request(origin, '/api/settings', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({sleepScreen: 2})}); check();
-        status(pin ? 'Заставка установлена. Она появится при следующем переходе в сон.' : `Заставка добавлена в ${directory}. Закреплённая /sleep.bmp, если она есть, остаётся приоритетной.`);
-      } catch (error) { if (error.name === 'AbortError') throw error; status('BMP сохранён. Включите «Своя картинка / Custom» в настройках заставки читалки вручную.'); }
+      status('Проверяем режим заставки…');
+      await enableCustomWallpaper(origin, controller.signal); check();
+      let cacheWarning = '';
+      try { await clearWallpaperCache(origin, controller.signal); check(); }
+      catch (error) {
+        if (error.name === 'AbortError') throw error;
+        cacheWarning = ' Кэш заставок сбросить не удалось. Если остаётся старая картинка, требуется проверка версии прошивки.';
+      }
+      status((pin ? 'Новая /sleep.bmp прочитана обратно и проверена, режим Custom включён. Выйдите из File Transfer и снова переведите читалку в сон.' : `Заставка добавлена в ${directory}. Закреплённая /sleep.bmp, если она есть, остаётся приоритетной.`) + cacheWarning);
     } catch (error) {
       const partial = pinned ? 'Файлы заставки сохранены. ' : saved ? 'Картинка сохранена в коллекции, но не закреплена. ' : '';
       status(partial + (error.name === 'AbortError' ? 'Передача остановлена. На карте может остаться неполный файл; проверьте его перед повтором.' : error.message));

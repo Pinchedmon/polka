@@ -1,5 +1,5 @@
-import {initWallpaperEditor} from './wallpaper.mjs?v=20261117-3';
-import {deviceOrigin, childPath, parentPath, formatSize, request, listFiles, upload} from './client.mjs?v=20261117-3';
+import {initWallpaperEditor} from './wallpaper.mjs?v=20261117-4';
+import {deviceOrigin, childPath, parentPath, formatSize, request, listFiles, upload} from './client.mjs?v=20261117-4';
 let wallpaperEditor;
 const $ = id => document.getElementById(id);
 let origin = null, path = '/', remote = [], queue = [], busy = false, transferring = false, connecting = false, controller;
