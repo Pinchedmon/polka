@@ -30,10 +30,10 @@ export function initWallpaperEditor({getOrigin, isBusy, setBusy, onSaved}) {
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
       grayscale(pixels.data); ctx.putImageData(pixels, 0, 0);
     } else {
-      ctx.fillStyle = '#77806d'; ctx.textAlign = 'center'; ctx.font = '30px Georgia';
+      ctx.fillStyle = '#8a7f93'; ctx.textAlign = 'center'; ctx.font = '600 30px Unbounded, Nunito, sans-serif';
       ctx.fillText('Ваша', canvas.width / 2, canvas.height * .45);
       ctx.fillText('история', canvas.width / 2, canvas.height * .45 + 42);
-      ctx.font = '15px sans-serif'; ctx.fillText('начинается с картинки', canvas.width / 2, canvas.height * .65);
+      ctx.font = '600 16px Nunito, sans-serif'; ctx.fillText('начинается с картинки', canvas.width / 2, canvas.height * .65);
     }
     $('wp-preview-caption').textContent = `${canvas.width} × ${canvas.height} · предпросмотр e-ink`;
     if (frame) {

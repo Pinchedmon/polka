@@ -3,12 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f5f4f0">
+<meta name="theme-color" content="#f5effa">
 <meta name="description" content="Полка — отправляйте книги и файлы на Xteink по Wi-Fi прямо из браузера. Для прошивки CrossPoint.">
 <title>Полка — файлы на Xteink по Wi-Fi</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23272420' d='M7 6h7v25H7zm10 0h7v25h-7zm10 3 6-2 7 23-6 2zM4 34h34v3H4z'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="./web.css?v=20261117-4">
-<script type="module" src="./app.mjs?v=20261117-4"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23e2648f' d='M7 6h7v25H7zm10 0h7v25h-7zm10 3 6-2 7 23-6 2zM4 34h34v3H4z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Nunito:wght@400;600;700;800&family=Unbounded:wght@600;700&display=swap">
+<link rel="stylesheet" href="./web.css?v=20261117-5">
+<script type="module" src="./app.mjs?v=20261117-5"></script>
 </head>
 <body>
 <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -29,15 +32,16 @@
     <div class="reader-art" aria-hidden="true">
       <svg class="reader-drawing" viewBox="0 0 260 240" fill="none">
         <g class="reader-body">
-          <rect x="66" y="14" width="128" height="204" rx="17" fill="#353b35"/>
-          <rect x="71" y="19" width="118" height="194" rx="13" stroke="#697166"/>
-          <rect x="77" y="28" width="106" height="163" rx="5" fill="#e8e9dc"/>
-          <g class="reader-sleep" stroke="#57604e" stroke-width="2.5" stroke-linecap="round"><path d="M105 95q8 10 16 0m18 0q8 10 16 0"/><path d="M121 119q9 6 18 0" stroke-width="1.5"/></g>
-          <g class="reader-page" fill="#67715d"><path d="M92 53h58v4H92zm0 16h76v2H92zm0 8h76v2H92zm0 8h65v2H92zm0 18h76v2H92zm0 8h76v2H92zm0 8h53v2H92zm0 18h76v2H92zm0 8h66v2H92z"/><path d="M156 28h13v27l-6.5-5-6.5 5V28Z" fill="#a4b889"/></g>
-          <rect x="103" y="201" width="18" height="4" rx="2" fill="#92998a"/><rect x="139" y="201" width="18" height="4" rx="2" fill="#92998a"/>
-          <g class="reader-transfer"><rect x="100" y="78" width="60" height="72" rx="4" fill="#f6f6ed" stroke="#9baa8e"/><path d="M113 95h34m-34 8h34m-34 8h23" stroke="#839274" stroke-width="2"/><path d="m123 129 7 7 12-15" stroke="#506c47" stroke-width="2.5"/></g>
+          <rect x="66" y="14" width="128" height="204" rx="22" fill="#4a3a5a"/>
+          <rect x="71" y="19" width="118" height="194" rx="18" stroke="#6e5b80"/>
+          <rect x="77" y="28" width="106" height="163" rx="9" fill="#fbf7ef"/>
+          <g class="reader-cheeks" fill="#f7a8c0"><ellipse cx="102" cy="112" rx="9" ry="5.5"/><ellipse cx="158" cy="112" rx="9" ry="5.5"/></g><g class="reader-sleep" stroke="#4a3a5a" stroke-width="3" stroke-linecap="round" fill="none"><path d="M105 97q8 9 16 0m18 0q8 9 16 0"/><path d="M123 118q7 6 14 0" stroke-width="2.2"/></g>
+          <g class="reader-page" fill="#8d7a9e"><path d="M92 53h58v4H92zm0 16h76v2H92zm0 8h76v2H92zm0 8h65v2H92zm0 18h76v2H92zm0 8h76v2H92zm0 8h53v2H92zm0 18h76v2H92zm0 8h66v2H92z"/><path d="M156 28h13v27l-6.5-5-6.5 5V28Z" fill="#e2648f"/></g>
+          <rect x="103" y="200" width="18" height="5" rx="2.5" fill="#a796b6"/><rect x="139" y="200" width="18" height="5" rx="2.5" fill="#a796b6"/>
+          <g class="reader-transfer"><rect x="100" y="78" width="60" height="72" rx="4" fill="#fff" stroke="#f0bcd0" stroke-width="2"/><path d="M113 95h34m-34 8h34m-34 8h23" stroke="#c9b6d8" stroke-width="2" stroke-linecap="round"/><path d="m123 129 7 7 12-15" stroke="#4f9a78" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
         </g>
-        <g class="reader-signal" stroke="#617b56" stroke-width="2.5" stroke-linecap="round"><path d="M208 55q7 7 0 14"/><path d="M216 47q15 15 0 30"/><path d="M224 39q23 23 0 46"/></g>
+        <g class="reader-zzz" fill="#b08bd0" font-family="Unbounded, sans-serif" font-weight="700"><text x="200" y="58" font-size="20">z</text><text x="220" y="34" font-size="14">z</text></g>
+        <g class="reader-signal" stroke="#4f9a78" stroke-width="2.5" stroke-linecap="round"><path d="M208 55q7 7 0 14"/><path d="M216 47q15 15 0 30"/><path d="M224 39q23 23 0 46"/></g>
       </svg>
       <span id="reader-caption">Для хороших историй</span>
     </div>
@@ -65,7 +69,7 @@
       <div class="section-title"><h2 id="shelf-title">На читалке</h2><button id="refresh" class="text-button" disabled>Обновить</button></div>
       <div class="folder-toolbar"><button id="up" class="secondary" aria-label="В родительскую папку" disabled>↑</button><nav id="folder-path" aria-label="Путь папки">/</nav><button id="new-folder" class="text-button" disabled>Новая папка</button></div>
       <label class="search-box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="file-search" type="search" placeholder="Найти в папке" aria-label="Поиск в текущей папке" disabled></label>
-      <div id="shelf-illustration" class="shelf-illustration" aria-hidden="true"><svg width="120" height="108" viewBox="0 0 120 108" fill="none"><path d="M14 89h92" stroke="#8e9787" stroke-width="3" stroke-linecap="round"/><rect x="24" y="26" width="17" height="60" rx="2" fill="#c7cfc0"/><path d="M29 33h7m-7 44h7" stroke="#819376"/><rect x="44" y="17" width="20" height="69" rx="2" fill="#65765d"/><path d="M49 26h10m-10 4h10m-10 47h10" stroke="#c4d1bb"/><g transform="rotate(-13 86 86)"><rect x="74" y="30" width="18" height="56" rx="2" fill="#d7ccb9"/><path d="M79 39h8m-8 38h8" stroke="#9e9077"/></g></svg></div>
+      <div id="shelf-illustration" class="shelf-illustration" aria-hidden="true"><svg width="120" height="108" viewBox="0 0 120 108" fill="none"><path d="M14 89h92" stroke="#c9b6d8" stroke-width="4" stroke-linecap="round"/><rect x="24" y="26" width="17" height="60" rx="4" fill="#ffd977"/><path d="M29 33h7m-7 44h7" stroke="#d1a93a" stroke-width="2" stroke-linecap="round"/><rect x="44" y="17" width="20" height="69" rx="4" fill="#e2648f"/><path d="M49 26h10m-10 4h10m-10 47h10" stroke="#fbd0de" stroke-width="2" stroke-linecap="round"/><g transform="rotate(-13 86 86)"><rect x="74" y="30" width="18" height="56" rx="4" fill="#9fd8bb"/><path d="M79 39h8m-8 38h8" stroke="#4f9a78" stroke-width="2" stroke-linecap="round"/></g><path d="M96 14l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#b08bd0"/></svg></div>
       <p id="folder-status" class="empty" role="status">Подключите Xteink, чтобы выбрать папку и увидеть файлы на карте памяти.</p>
       <ul id="remote-files" class="remote-files" aria-label="Файлы на читалке"></ul>
     </section>

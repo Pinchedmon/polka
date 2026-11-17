@@ -1,4 +1,4 @@
-import {initWallpaperEditor} from './wallpaper.mjs?v=20261117-4';
+import {initWallpaperEditor} from './wallpaper.mjs?v=20261117-5';
 import {deviceOrigin, childPath, parentPath, formatSize, request, listFiles, upload} from './client.mjs?v=20261117-4';
 let wallpaperEditor;
 const $ = id => document.getElementById(id);
